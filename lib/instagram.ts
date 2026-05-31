@@ -21,7 +21,7 @@ export async function getInstagramClient() {
   const ig = new IgApiClient();
   ig.state.generateDevice(username);
 
-  if (proxyUrl) {
+  if (proxyUrl && proxyUrl !== 'http://usuario:senha@host:porta') {
     ig.state.proxyUrl = proxyUrl;
   }
 

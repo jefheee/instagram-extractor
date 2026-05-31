@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Apply Proxy if configured
-    if (process.env.PROXY_URL) {
+    if (process.env.PROXY_URL && process.env.PROXY_URL !== 'http://usuario:senha@host:porta') {
       try {
         const proxyUri = new URL(process.env.PROXY_URL);
         axiosConfig.proxy = {

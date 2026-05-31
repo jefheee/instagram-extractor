@@ -205,7 +205,7 @@ export default function Home() {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none" />
 
-      <header className="w-full flex items-center justify-between p-4 border-b border-zinc-800/40 bg-zinc-950/20 backdrop-blur-md">
+      <header className="w-full flex items-center justify-between p-4 bg-transparent">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white shadow-md">
             IV

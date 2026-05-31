@@ -181,8 +181,9 @@ export default function Home() {
     try {
       const text = await navigator.clipboard.readText();
       setUrl(text);
-    } catch {
-      // Fail silently if clipboard access is denied
+    } catch (err: any) {
+      alert("Permissão negada ou restrição de HTTP. Pressione Ctrl+V para colar na barra.");
+      console.error(err);
     }
   };
 
@@ -204,17 +205,16 @@ export default function Home() {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none" />
 
-      {/* Header / Logo */}
-      <header className="max-w-6xl mx-auto pt-8 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="p-2.5 bg-gradient-to-tr from-indigo-500 to-violet-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-            <InstagramIcon className="w-6 h-6 text-white" />
+      <header className="w-full flex items-center justify-between p-4 border-b border-zinc-800/40 bg-zinc-950/20 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white shadow-md">
+            IV
           </div>
-          <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
+          <span className="text-xl font-bold tracking-tight text-white">
             InstaVault
           </span>
         </div>
-        <div className="text-xs text-slate-500 font-mono bg-zinc-950/40 px-3 py-1.5 rounded-full border border-zinc-800/50">
+        <div className="text-xs text-slate-400 font-mono bg-zinc-900/60 px-3.5 py-1.5 rounded-full border border-zinc-850 uppercase tracking-wide">
           v2.0 // Cobalt-Inspired
         </div>
       </header>

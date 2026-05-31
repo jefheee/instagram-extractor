@@ -36,12 +36,8 @@ export async function getInstagramClient() {
       try {
         await ig.account.currentUser();
       } catch (e: any) {
-        console.warn('Session verification failed, attempting password login fallback:', e.message);
-        if (password) {
-          await performLogin(ig, username, password);
-        } else {
-          throw new Error('Session ID is invalid/expired, and no IG_PASSWORD was provided.');
-        }
+        console.error('Session verification failed:', e.message);
+        throw new Error('Session ID configured is invalid or expired.');
       }
     } else if (password) {
       await performLogin(ig, username, password);

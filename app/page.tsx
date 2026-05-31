@@ -207,11 +207,8 @@ export default function Home() {
 
       <header className="w-full flex items-center justify-between p-4 bg-transparent">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white shadow-md">
-            IV
-          </div>
-          <span className="text-xl font-bold tracking-tight text-white">
-            InstaVault
+          <span className="text-sm font-mono font-bold tracking-widest text-indigo-400 uppercase">
+            IV // InstaVault
           </span>
         </div>
         <div className="text-xs text-slate-400 font-mono bg-zinc-900/60 px-3.5 py-1.5 rounded-full border border-zinc-850 uppercase tracking-wide">

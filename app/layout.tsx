@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import { LanguageProvider } from "./context/LanguageContext";
 import { Navbar } from "./components/Navbar";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
 });
 
@@ -26,10 +26,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#000000] text-white min-h-screen pt-14`}>
+      <body className={`${hanken.className} ${jetbrains.variable} antialiased h-screen w-screen overflow-hidden flex flex-col bg-background text-on-surface`}>
         <LanguageProvider>
           <Navbar />
-          {children}
+          <div className="flex-1 overflow-hidden relative">
+            {children}
+          </div>
         </LanguageProvider>
       </body>
     </html>

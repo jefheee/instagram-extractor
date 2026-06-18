@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InstaVault | Extraction Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800;900&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #050505;
+            color: #e5e2e1;
+            font-family: 'Hanken+Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+        .terminal-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .terminal-scrollbar::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        .terminal-scrollbar::-webkit-scrollbar-thumb {
+            background: #333333;
+        }
+        .terminal-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #0095f6;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 149, 246, 0.1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#d1e4ff",
+                      "surface-tint": "#9ecaff",
+                      "surface": "#131313",
+                      "inverse-surface": "#e5e2e1",
+                      "surface-container-high": "#2a2a2a",
+                      "on-primary-container": "#002b4d",
+                      "on-secondary": "#313030",
+                      "on-tertiary-container": "#2a2a2a",
+                      "primary-container": "#0095f6",
+                      "outline-variant": "#3f4752",
+                      "tertiary-fixed": "#e4e2e1",
+                      "primary": "#9ecaff",
+                      "inverse-primary": "#0061a3",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-tertiary-fixed": "#1b1c1c",
+                      "on-error-container": "#ffdad6",
+                      "surface-variant": "#353534",
+                      "on-tertiary": "#303030",
+                      "on-surface-variant": "#bfc7d4",
+                      "tertiary": "#c8c6c5",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "surface-container-highest": "#353534",
+                      "on-background": "#e5e2e1",
+                      "on-secondary-fixed-variant": "#474746",
+                      "outline": "#89919e",
+                      "surface-container": "#201f1f",
+                      "surface-container-low": "#1c1b1b",
+                      "on-surface": "#e5e2e1",
+                      "surface-dim": "#131313",
+                      "on-primary-fixed": "#001d36",
+                      "error": "#ffb4ab",
+                      "on-primary-fixed-variant": "#00497d",
+                      "error-container": "#93000a",
+                      "on-tertiary-fixed-variant": "#474746",
+                      "tertiary-fixed-dim": "#c8c6c5",
+                      "background": "#131313",
+                      "on-primary": "#003258",
+                      "on-error": "#690005",
+                      "secondary": "#c8c6c5",
+                      "inverse-on-surface": "#313030",
+                      "secondary-fixed": "#e5e2e1",
+                      "surface-bright": "#3a3939",
+                      "on-secondary-container": "#b7b5b4",
+                      "secondary-container": "#474746",
+                      "surface-container-lowest": "#0e0e0e",
+                      "primary-fixed-dim": "#9ecaff",
+                      "tertiary-container": "#929090"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "base": "4px",
+                      "gutter": "16px",
+                      "md": "16px",
+                      "margin-safe": "24px",
+                      "xl": "40px",
+                      "sm": "8px",
+                      "xs": "4px"
+              },
+              "fontFamily": {
+                      "headline-xl": ["Hanken Grotesk"],
+                      "body-md": ["Hanken Grotesk"],
+                      "headline-lg": ["Hanken Grotesk"],
+                      "headline-md": ["Hanken Grotesk"],
+                      "label-caps": ["JetBrains Mono"],
+                      "code-sm": ["JetBrains Mono"],
+                      "body-lg": ["Hanken Grotesk"]
+              },
+              "fontSize": {
+                      "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                      "code-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background">
+<!-- Sidebar (Shared Component) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface dark:bg-surface border-r border-outline-variant flex flex-col py-lg z-50">
+<div class="px-md mb-xl">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">InstaVault CLI</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-60">v2.4.0-stable</p>
+</div>
+<nav class="flex-1 space-y-base px-sm">
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-95 duration-100 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Overview
+            </a>
+<a class="flex items-center gap-md px-md py-sm bg-secondary-container dark:bg-secondary-container text-primary dark:text-primary border-l-4 border-primary font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="filter_alt">filter_alt</span>
+                Scrapers
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-95 duration-100 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+                Vault
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-95 duration-100 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+                Logs
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-95 duration-100 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+                API
+            </a>
+</nav>
+<div class="px-sm pt-xl border-t border-outline-variant space-y-base">
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                Documentation
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+                GitHub
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- Top Bar (Shared Component) -->
+<header class="w-full top-0 sticky z-40 bg-background border-b border-outline-variant">
+<div class="flex justify-between items-center px-lg py-md w-full max-w-full mx-auto">
+<div class="flex items-center gap-xl">
+<span class="font-headline-lg text-headline-lg font-black text-primary tracking-tighter">InstaVault</span>
+<nav class="hidden md:flex gap-lg">
+<a class="text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors duration-200" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors duration-200" href="#">Documentation</a>
+<a class="text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors duration-200" href="#">GitHub</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined p-sm hover:text-primary transition-colors cursor-pointer" data-icon="terminal">terminal</button>
+<button class="material-symbols-outlined p-sm hover:text-primary transition-colors cursor-pointer" data-icon="settings">settings</button>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="flex-1 grid grid-cols-12 gap-gutter p-gutter">
+<!-- Left Column: Configuration -->
+<section class="col-span-12 lg:col-span-5 xl:col-span-4 space-y-gutter">
+<div class="bg-surface border border-outline-variant p-md">
+<header class="flex items-center justify-between mb-md border-b border-outline-variant pb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="settings_input_component">settings_input_component</span>
+<h2 class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface">Configuração</h2>
+</div>
+</header>
+<div class="space-y-md">
+<!-- Alvo & Diretório -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Alvo &amp; Diretório</label>
+<div class="relative">
+<span class="absolute left-sm top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="alternate_email">alternate_email</span>
+<input class="w-full pl-xl pr-md py-sm bg-background border border-outline-variant focus:border-primary-container outline-none font-code-sm text-code-sm text-on-surface transition-all" placeholder="username ou URL" type="text"/>
+</div>
+</div>
+<!-- Caminho Absoluto -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Caminho Absoluto</label>
+<div class="relative">
+<span class="absolute left-sm top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="folder_open">folder_open</span>
+<input class="w-full pl-xl pr-md py-sm bg-background border border-outline-variant focus:border-primary-container outline-none font-code-sm text-code-sm text-on-surface transition-all" type="text" value="/mnt/vault/extraction/temp"/>
+</div>
+</div>
+<!-- Modo de Operação -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Modo de Operação</label>
+<div class="grid grid-cols-2 gap-xs">
+<button class="flex items-center gap-sm px-md py-sm bg-primary-container text-white border border-primary-container font-code-sm text-code-sm font-bold">
+<span class="material-symbols-outlined text-[16px]" data-icon="person">person</span> Profile
+                                </button>
+<button class="flex items-center gap-sm px-md py-sm bg-background border border-outline-variant hover:border-on-surface-variant transition-colors font-code-sm text-code-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="grid_view">grid_view</span> Post/Reel
+                                </button>
+<button class="flex items-center gap-sm px-md py-sm bg-background border border-outline-variant hover:border-on-surface-variant transition-colors font-code-sm text-code-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="history">history</span> Stories
+                                </button>
+<button class="flex items-center gap-sm px-md py-sm bg-background border border-outline-variant hover:border-on-surface-variant transition-colors font-code-sm text-code-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="bookmark">bookmark</span> Saved
+                                </button>
+</div>
+</div>
+<!-- Filtros Avançados -->
+<div class="pt-md border-t border-outline-variant mt-md">
+<label class="font-label-caps text-label-caps text-on-surface-variant block mb-md">Filtros Avançados</label>
+<div class="space-y-md">
+<div class="flex items-center justify-between gap-md">
+<span class="font-code-sm text-code-sm text-on-surface-variant">Count:</span>
+<input class="w-24 px-sm py-xs bg-background border border-outline-variant font-code-sm text-code-sm text-primary text-right" type="number" value="100"/>
+</div>
+<div class="flex items-center justify-between gap-md">
+<span class="font-code-sm text-code-sm text-on-surface-variant">Min Likes:</span>
+<input class="w-24 px-sm py-xs bg-background border border-outline-variant font-code-sm text-code-sm text-primary text-right" type="number" value="500"/>
+</div>
+<div class="flex items-center justify-between gap-md">
+<span class="font-code-sm text-code-sm text-on-surface-variant">Min Comments:</span>
+<input class="w-24 px-sm py-xs bg-background border border-outline-variant font-code-sm text-code-sm text-primary text-right" type="number" value="20"/>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="pt-lg">
+<button class="w-full bg-primary-container hover:bg-opacity-90 active:scale-[0.98] transition-all text-white py-md font-headline-md text-headline-md flex items-center justify-center gap-md" id="start-btn">
+<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span>
+                                INICIAR EXTRAÇÃO
+                            </button>
+</div>
+</div>
+</div>
+<!-- Stats Panel (Bento Style) -->
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface border border-outline-variant p-md">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-xs">Uptime</p>
+<p class="font-code-sm text-code-sm text-primary">02:14:55</p>
+</div>
+<div class="bg-surface border border-outline-variant p-md">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-xs">Threads</p>
+<p class="font-code-sm text-code-sm text-primary">08 Act.</p>
+</div>
+</div>
+</section>
+<!-- Right Column: Terminal Simulation -->
+<section class="col-span-12 lg:col-span-7 xl:col-span-8 flex flex-col h-full min-h-[600px]">
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant relative overflow-hidden flex flex-col">
+<div class="scanline"></div>
+<!-- Terminal Header -->
+<div class="flex items-center justify-between bg-surface-container-high px-md py-sm border-b border-outline-variant">
+<div class="flex items-center gap-sm">
+<div class="flex gap-xs">
+<div class="w-2.5 h-2.5 rounded-full bg-error"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-secondary"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+</div>
+<span class="ml-sm font-code-sm text-code-sm text-on-surface-variant opacity-80">bash — instavault-cli — 120x40</span>
+</div>
+<div class="flex items-center gap-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] cursor-pointer" data-icon="search">search</span>
+<span class="material-symbols-outlined text-[18px] cursor-pointer" data-icon="content_copy">content_copy</span>
+<span class="material-symbols-outlined text-[18px] cursor-pointer" data-icon="delete">delete</span>
+</div>
+</div>
+<!-- Terminal Logs Body -->
+<div class="flex-1 p-md font-code-sm text-code-sm overflow-y-auto terminal-scrollbar selection:bg-primary-container selection:text-white" id="terminal-body">
+<div class="text-on-tertiary-container mb-xs">[SYSTEM] Initializing InstaVault Environment...</div>
+<div class="text-on-tertiary-container mb-xs">[SYSTEM] Load configuration: config.json (Success)</div>
+<div class="text-on-tertiary-container mb-xs">[SYSTEM] Proxy rotation service: ONLINE (142 endpoints)</div>
+<div class="text-primary mb-xs">Aguardando inicialização...</div>
+<div class="inline-block w-2 h-4 bg-primary animate-pulse ml-xs" id="cursor"></div>
+</div>
+<!-- Terminal Footer Stats -->
+<div class="bg-surface px-md py-xs border-t border-outline-variant flex justify-between items-center text-[10px] uppercase font-label-caps text-on-surface-variant opacity-60">
+<div class="flex gap-md">
+<span>Ln: 4, Col: 22</span>
+<span>UTF-8</span>
+</div>
+<div class="flex gap-md">
+<span>Mem: 42.4 MB</span>
+<span>CPU: 0.8%</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<script>
+        const terminal = document.getElementById('terminal-body');
+        const cursor = document.getElementById('cursor');
+        const startBtn = document.getElementById('start-btn');
+
+        const logs = [
+            { type: 'info', text: 'Estabelecendo conexão segura com endpoint...' },
+            { type: 'info', text: 'Handshake SSL completo.' },
+            { type: 'success', text: 'Autenticação bem-sucedida: @instavault_agent_01' },
+            { type: 'warning', text: 'Header detectado: Variando User-Agent para evitar detecção.' },
+            { type: 'info', text: 'Iniciando varredura no alvo...' },
+            { type: 'data', text: '-> Buscando metadados do perfil: 100%' },
+            { type: 'data', text: '-> Extraindo lista de posts (Modo: Post/Reel)' },
+            { type: 'success', text: '✓ Post extraído: ID 92837412 (Media Type: Image)' },
+            { type: 'success', text: '✓ Post extraído: ID 92837415 (Media Type: Video)' },
+            { type: 'error', text: '✖ Erro no download do item 92837418: Tentando novamente (1/3)...' },
+            { type: 'success', text: '✓ Post extraído: ID 92837418 (Recuperado)' },
+            { type: 'data', text: '-> Progresso: [||||||||||          ] 50%' },
+        ];
+
+        function addLog(type, text) {
+            const div = document.createElement('div');
+            div.className = 'mb-xs transition-opacity duration-300';
+            
+            const timestamp = new Date().toLocaleTimeString('pt-BR', { hour12: false });
+            let colorClass = 'text-on-surface-variant';
+            let prefix = '';
+
+            switch(type) {
+                case 'info': colorClass = 'text-primary'; prefix = '[INFO]'; break;
+                case 'success': colorClass = 'text-green-400'; prefix = '[SUCCESS]'; break;
+                case 'warning': colorClass = 'text-yellow-400'; prefix = '[WARN]'; break;
+                case 'error': colorClass = 'text-error'; prefix = '[ERROR]'; break;
+                case 'data': colorClass = 'text-on-surface'; prefix = '[DATA]'; break;
+            }
+
+            div.innerHTML = `<span class="opacity-40">[${timestamp}]</span> <span class="${colorClass}">${prefix} ${text}</span>`;
+            terminal.insertBefore(div, cursor);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        let isRunning = false;
+        let logIndex = 0;
+
+        startBtn.addEventListener('click', () => {
+            if(isRunning) return;
+            isRunning = true;
+            startBtn.innerHTML = '<span class="material-symbols-outlined animate-spin" data-icon="sync">sync</span> PROCESSANDO...';
+            startBtn.classList.replace('bg-primary-container', 'bg-surface-container-highest');
+            
+            const interval = setInterval(() => {
+                if(logIndex < logs.length) {
+                    addLog(logs[logIndex].type, logs[logIndex].text);
+                    logIndex++;
+                } else {
+                    clearInterval(interval);
+                    addLog('success', 'PROCESSO FINALIZADO. 12 itens extraídos.');
+                    isRunning = false;
+                    startBtn.innerHTML = '<span class="material-symbols-outlined" data-icon="check">check</span> EXTRAÇÃO COMPLETA';
+                    startBtn.classList.replace('bg-surface-container-highest', 'bg-green-600');
+                    
+                    setTimeout(() => {
+                        startBtn.innerHTML = '<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span> INICIAR EXTRAÇÃO';
+                        startBtn.classList.replace('bg-green-600', 'bg-primary-container');
+                        logIndex = 0;
+                    }, 3000);
+                }
+            }, 800 + Math.random() * 1200);
+        });
+    </script>
+</body></html>

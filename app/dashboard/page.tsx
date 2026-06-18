@@ -1,26 +1,16 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Search, 
-  Loader2, 
-  AlertCircle, 
-  Terminal,
-  FolderOpen,
-  User,
-  Image as ImageIcon,
-  History,
-  Bookmark,
-  ToggleLeft,
-  ToggleRight
-} from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { 
+  Loader2, 
+} from 'lucide-react';
 
 export default function Dashboard() {
   const { t } = useLanguage();
   
   const [url, setUrl] = useState('');
-  const [targetDir, setTargetDir] = useState('');
+  const [targetDir, setTargetDir] = useState('/mnt/vault/extraction/temp');
   const [mode, setMode] = useState('profile');
   
   const [options, setOptions] = useState({
@@ -32,27 +22,22 @@ export default function Dashboard() {
     comments: false,
     fastUpdate: false,
     forceAnonymous: false,
-    count: '',
-    minLikes: '',
-    minComments: '',
+    count: '100',
+    minLikes: '500',
+    minComments: '20',
     filenamePattern: '{date_utc}_UTC'
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState<{type: string, text: string}[]>([]);
   const logsEndRef = useRef<HTMLDivElement>(null);
-
-  const toggleOption = (key: keyof typeof options) => {
-    setOptions(prev => ({ ...prev, [key]: typeof prev[key] === 'boolean' ? !prev[key] : prev[key] }));
-  };
 
   const handleOptionChange = (key: keyof typeof options, value: string) => {
     setOptions(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSearch = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleSearch = async () => {
     if (!url.trim() && mode !== 'saved') return;
 
     setLoading(true);
@@ -90,7 +75,11 @@ export default function Dashboard() {
               try {
                 const data = JSON.parse(line.slice(6));
                 if (data.log) {
-                  setLogs((prev) => [...prev, data.log]);
+                  let logType = 'data';
+                  if (data.log.includes('[Erro]') || data.log.includes('[stderr]')) logType = 'error';
+                  if (data.log.includes('[Sistema]')) logType = 'info';
+                  if (data.log.includes('Concluído') || data.log.includes('Sucesso')) logType = 'success';
+                  setLogs((prev) => [...prev, { type: logType, text: data.log }]);
                 }
                 if (data.done) {
                   setLoading(false);
@@ -105,15 +94,7 @@ export default function Dashboard() {
     } catch (err: any) {
       setError(err.message || t('dash.err.comm'));
       setLoading(false);
-    }
-  };
-
-  const handlePaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      setUrl(text);
-    } catch (err: any) {
-      // ignore
+      setLogs((prev) => [...prev, { type: 'error', text: err.message }]);
     }
   };
 
@@ -124,217 +105,171 @@ export default function Dashboard() {
   }, [logs]);
 
   return (
-    <main className="flex flex-col md:flex-row gap-4 h-[calc(100vh-3.5rem)] p-4 max-w-[1600px] mx-auto w-full">
-      
-      {/* Left Panel: Controls */}
-      <div className="w-full md:w-3/5 lg:w-2/3 flex flex-col gap-4 overflow-y-auto scrollbar-thin scrollbar-thumb-[#262626] pr-2 pb-4">
-        
-        {/* Block 1 & 2 Container */}
-        <div className="flex flex-col xl:flex-row gap-4 shrink-0">
-          
-          {/* Target Box */}
-          <div className="flex-1 bg-[#121212] p-5 rounded-xl border border-[#262626] flex flex-col gap-4">
-            <h3 className="text-xs font-semibold text-[#a8a8a8] uppercase tracking-wider">{t('dash.target.title')}</h3>
-            <div className="flex flex-col gap-3">
-              <div className="relative w-full flex items-center">
-                <Search className="absolute left-3 w-4 h-4 text-gray-500" />
-                <input
+    <div className="flex-1 grid grid-cols-12 gap-4 p-4 md:p-6 overflow-hidden h-full">
+      {/* Left Column: Configuration */}
+      <section className="col-span-12 lg:col-span-5 xl:col-span-4 space-y-4 overflow-y-auto pr-2 pb-20 terminal-scrollbar">
+        <div className="bg-surface border border-outline-variant p-4 rounded-[4px] md:rounded-[8px]">
+          <header className="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-primary rounded-full animate-pulse"></span>
+              <h2 className="text-[11px] font-mono uppercase tracking-widest text-on-surface">Configuração</h2>
+            </div>
+          </header>
+
+          <div className="space-y-4">
+            {/* Alvo & Diretório */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-mono text-on-surface-variant">Alvo &amp; Diretório</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">@</span>
+                <input 
+                  className="w-full pl-8 pr-4 py-2 bg-background border border-outline-variant focus:border-primary-container outline-none font-mono text-[13px] text-on-surface transition-all rounded-[4px]" 
+                  placeholder={mode === 'saved' ? t('dash.target.saved') : "username ou URL"} 
                   type="text"
-                  placeholder={mode === 'saved' ? t('dash.target.saved') : t('dash.target.placeholder')}
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   disabled={mode === 'saved'}
-                  className="w-full bg-black pl-10 pr-16 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-[#262626] border border-[#262626] rounded-lg disabled:opacity-50"
                 />
-                <button
-                  type="button"
-                  onClick={handlePaste}
-                  disabled={mode === 'saved'}
-                  className="absolute right-2 px-3 py-1 text-xs font-medium text-white hover:bg-[#262626] bg-[#1a1a1a] rounded-md border border-[#262626] transition-colors disabled:opacity-50"
-                >
-                  {t('dash.target.paste')}
-                </button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch">
-                <div className="relative flex-1 flex items-center">
-                  <FolderOpen className="absolute left-3 w-4 h-4 text-gray-500" />
-                  <input
-                    type="text"
-                    placeholder={t('dash.target.dirPlaceholder')}
-                    value={targetDir}
-                    onChange={(e) => setTargetDir(e.target.value)}
-                    className="w-full bg-black pl-10 pr-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-[#262626] border border-[#262626] rounded-lg"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={handleSearch}
-                  disabled={loading || (!url.trim() && mode !== 'saved')}
-                  className="shrink-0 bg-[#0095f6] hover:bg-[#1877f2] text-white font-semibold text-sm px-6 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed h-[42px]"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>{t('dash.target.btn')}</span>}
-                </button>
               </div>
             </div>
-          </div>
 
-          {/* Mode Box */}
-          <div className="xl:w-72 shrink-0 bg-[#121212] p-5 rounded-xl border border-[#262626] flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-[#a8a8a8] uppercase tracking-wider">{t('dash.mode.title')}</h3>
-            <div className="grid grid-cols-2 gap-2 flex-1">
-              {[
-                { id: 'profile', icon: User, label: 'dash.mode.profile' },
-                { id: 'post', icon: ImageIcon, label: 'dash.mode.post' },
-                { id: 'stories', icon: History, label: 'dash.mode.stories' },
-                { id: 'saved', icon: Bookmark, label: 'dash.mode.saved' },
-              ].map((m) => (
-                <button 
-                  key={m.id}
-                  onClick={() => setMode(m.id)} 
-                  className={`p-2 rounded-lg border flex flex-col items-center justify-center gap-1.5 transition-colors ${mode === m.id ? 'bg-[#262626] border-[#404040] text-white' : 'bg-black border-[#262626] text-gray-500 hover:text-white hover:border-[#404040]'}`}
-                >
-                  <m.icon className="w-4 h-4" /> 
-                  <span className="text-[11px] font-medium">{t(m.label)}</span>
-                </button>
-              ))}
+            {/* Caminho Absoluto */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-mono text-on-surface-variant">Caminho Absoluto</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">/</span>
+                <input 
+                  className="w-full pl-8 pr-4 py-2 bg-background border border-outline-variant focus:border-primary-container outline-none font-mono text-[13px] text-on-surface transition-all rounded-[4px]" 
+                  type="text" 
+                  value={targetDir}
+                  onChange={(e) => setTargetDir(e.target.value)}
+                />
+              </div>
             </div>
-            <div 
-              onClick={() => toggleOption('forceAnonymous')}
-              className={`mt-1 flex items-center justify-between p-2.5 rounded-lg border transition-colors cursor-pointer select-none ${options.forceAnonymous ? 'bg-[#262626] border-[#404040]' : 'bg-black border-[#262626]'}`}
-            >
-              <span className="text-[11px] font-medium text-gray-300">{t('dash.mode.anon')}</span>
-              {options.forceAnonymous ? <ToggleRight className="w-4 h-4 text-white" /> : <ToggleLeft className="w-4 h-4 text-gray-600" />}
-            </div>
-          </div>
-        </div>
 
-        {/* Block 3 & 4 Container */}
-        <div className="flex flex-col lg:flex-row gap-4 shrink-0">
-          
-          {/* Scope Box */}
-          <div className="lg:w-1/3 shrink-0 bg-[#121212] p-5 rounded-xl border border-[#262626] flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-[#a8a8a8] uppercase tracking-wider">{t('dash.scope.title')}</h3>
-            <div className="flex flex-col gap-2.5 flex-1 pr-1">
-              {[
-                { key: 'noVideos', label: 'dash.scope.noVideos' },
-                { key: 'noCaptions', label: 'dash.scope.noCaptions' },
-                { key: 'noMetadata', label: 'dash.scope.noMetadata' },
-                { key: 'noProfilePic', label: 'dash.scope.noProfilePic' },
-                { key: 'comments', label: 'dash.scope.comments' },
-                { key: 'fastUpdate', label: 'dash.scope.fastUpdate' },
-                { key: 'tagged', label: 'dash.scope.tagged' }
-              ].map(({ key, label }) => (
-                <div key={key} className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-300">{t(label)}</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleOption(key as keyof typeof options)}
-                    className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full border border-[#262626] transition-colors duration-200 ease-in-out focus:outline-none ${options[key as keyof typeof options] ? 'bg-white' : 'bg-black'}`}
+            {/* Modo de Operação */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-mono text-on-surface-variant">Modo de Operação</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'profile', label: 'Profile' },
+                  { id: 'post', label: 'Post/Reel' },
+                  { id: 'stories', label: 'Stories' },
+                  { id: 'saved', label: 'Saved' }
+                ].map(m => (
+                  <button 
+                    key={m.id}
+                    onClick={() => setMode(m.id)}
+                    className={`flex items-center gap-2 px-4 py-2 font-mono text-[13px] font-bold rounded-[4px] transition-colors border ${mode === m.id ? 'bg-primary-container text-white border-primary-container' : 'bg-background border-outline-variant text-on-surface-variant hover:border-on-surface-variant'}`}
                   >
-                    <span className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out ${options[key as keyof typeof options] ? 'translate-x-3.5 bg-black' : 'translate-x-0.5 bg-gray-500'}`} />
+                    {m.label}
                   </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Filters Box */}
-          <div className="flex-1 bg-[#121212] p-5 rounded-xl border border-[#262626] flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-[#a8a8a8] uppercase tracking-wider">{t('dash.filters.title')}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 h-full">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs text-gray-400">{t('dash.filters.limit')}</label>
+            {/* Filtros Avançados */}
+            <div className="pt-4 border-t border-outline-variant mt-4">
+              <label className="text-[11px] font-mono text-on-surface-variant block mb-4">Filtros Avançados</label>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="font-mono text-[13px] text-on-surface-variant">Count:</span>
                   <input 
+                    className="w-24 px-2 py-1 bg-background border border-outline-variant font-mono text-[13px] text-primary text-right rounded-[4px]" 
                     type="number" 
-                    placeholder={t('dash.filters.limitEmpty')} 
-                    value={options.count} 
+                    value={options.count}
                     onChange={(e) => handleOptionChange('count', e.target.value)}
-                    className="w-full bg-black px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-[#262626] border border-[#262626] rounded-md"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs text-gray-400">{t('dash.filters.minLikes')}</label>
-                    <input 
-                      type="number" 
-                      placeholder="100" 
-                      value={options.minLikes} 
-                      onChange={(e) => handleOptionChange('minLikes', e.target.value)}
-                      className="w-full bg-black px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-[#262626] border border-[#262626] rounded-md"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs text-gray-400">{t('dash.filters.minComments')}</label>
-                    <input 
-                      type="number" 
-                      placeholder="10" 
-                      value={options.minComments} 
-                      onChange={(e) => handleOptionChange('minComments', e.target.value)}
-                      className="w-full bg-black px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-[#262626] border border-[#262626] rounded-md"
-                    />
-                  </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="font-mono text-[13px] text-on-surface-variant">Min Likes:</span>
+                  <input 
+                    className="w-24 px-2 py-1 bg-background border border-outline-variant font-mono text-[13px] text-primary text-right rounded-[4px]" 
+                    type="number" 
+                    value={options.minLikes}
+                    onChange={(e) => handleOptionChange('minLikes', e.target.value)}
+                  />
                 </div>
-              </div>
-
-              <div className="flex flex-col">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs text-gray-400">{t('dash.filters.naming')}</label>
-                  <select 
-                    value={options.filenamePattern}
-                    onChange={(e) => handleOptionChange('filenamePattern', e.target.value)}
-                    className="w-full bg-black px-3 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-[#262626] border border-[#262626] rounded-md appearance-none"
-                  >
-                    <option value="{date_utc}_UTC">{t('dash.filters.naming.default')}</option>
-                    <option value="{shortcode}_{profile}">{t('dash.filters.naming.id')}</option>
-                    <option value="{date_utc}_UTC_{shortcode}">{t('dash.filters.naming.full')}</option>
-                  </select>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="font-mono text-[13px] text-on-surface-variant">Min Comments:</span>
+                  <input 
+                    className="w-24 px-2 py-1 bg-background border border-outline-variant font-mono text-[13px] text-primary text-right rounded-[4px]" 
+                    type="number" 
+                    value={options.minComments}
+                    onChange={(e) => handleOptionChange('minComments', e.target.value)}
+                  />
                 </div>
               </div>
             </div>
-          </div>
 
-        </div>
-
-        {error && (
-          <div className="shrink-0 bg-[#2b1515] border border-[#5c2b2b] p-3 rounded-xl flex items-center gap-2 text-[#ff6b6b]">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <p className="text-xs font-medium">{error}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Right Panel: Terminal */}
-      <div className="w-full md:w-2/5 lg:w-1/3 shrink-0 bg-[#121212] rounded-xl overflow-hidden shadow-2xl p-0 flex flex-col border border-[#262626] min-h-[300px] md:min-h-0">
-        <div className="bg-black p-3 border-b border-[#262626] flex items-center gap-2 shrink-0">
-          <Terminal className="w-4 h-4 text-gray-400" />
-          <span className="text-[11px] font-mono font-bold text-gray-300 uppercase tracking-wider">{t('dash.term.title')}</span>
-          {loading && <Loader2 className="w-3 h-3 text-[#0095f6] animate-spin ml-auto" />}
-        </div>
-        
-        <div className="flex-1 bg-[#0a0a0a] p-4 overflow-y-auto font-mono text-[11px] text-gray-400 space-y-1.5 scrollbar-thin scrollbar-thumb-[#262626] scrollbar-track-transparent">
-          {logs.length === 0 ? (
-            <div className="text-[#404040] flex items-center h-full justify-center text-center px-4">
-              {t('dash.term.waiting')}
+            {/* Action Button */}
+            <div className="pt-6">
+              <button 
+                onClick={handleSearch}
+                disabled={loading || (!url.trim() && mode !== 'saved')}
+                className="w-full bg-primary-container disabled:opacity-50 hover:bg-opacity-90 active:scale-[0.98] transition-all text-white py-4 text-lg font-bold flex items-center justify-center gap-4 rounded-[4px]"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>INICIAR EXTRAÇÃO</span>}
+              </button>
             </div>
-          ) : (
-            logs.map((log, idx) => {
-              let logClass = "text-gray-400";
-              if (log.includes("[Erro]") || log.includes("[stderr]")) logClass = "text-[#ff6b6b]";
-              if (log.includes("[Sistema]")) logClass = "text-[#0095f6] font-medium";
-              
-              return (
-                <div key={idx} className={`${logClass} break-all leading-relaxed`}>
-                  <span className="text-[#404040] mr-2 select-none">&gt;</span>{log}
-                </div>
-              );
-            })
-          )}
-          <div ref={logsEndRef} />
+          </div>
         </div>
-      </div>
+      </section>
 
-    </main>
+      {/* Right Column: Terminal Simulation */}
+      <section className="col-span-12 lg:col-span-7 xl:col-span-8 flex flex-col h-full overflow-hidden">
+        <div className="flex-1 bg-[#050505] border-t border-outline-variant relative overflow-hidden flex flex-col rounded-none">
+          <div className="scanline"></div>
+          
+          {/* Terminal Header */}
+          <div className="flex items-center justify-between bg-surface-container-high px-4 py-2 border-b border-outline-variant">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-error"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-secondary"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
+              </div>
+              <span className="ml-2 font-mono text-[13px] text-on-surface-variant opacity-80">bash — instavault-cli — 120x40</span>
+            </div>
+            {loading && <Loader2 className="w-3 h-3 text-primary animate-spin" />}
+          </div>
+          
+          {/* Terminal Logs Body */}
+          <div className="flex-1 p-4 font-mono text-[13px] overflow-y-auto terminal-scrollbar selection:bg-primary-container selection:text-white pb-10">
+             {logs.length === 0 && !loading && (
+               <div className="text-on-tertiary-container mb-1">[SYSTEM] Waiting for execution...</div>
+             )}
+             {logs.map((log, idx) => {
+                let colorClass = 'text-on-surface-variant';
+                let prefix = '';
+                switch(log.type) {
+                    case 'info': colorClass = 'text-primary'; prefix = '[INFO]'; break;
+                    case 'success': colorClass = 'text-green-400'; prefix = '[SUCCESS]'; break;
+                    case 'error': colorClass = 'text-error'; prefix = '[ERROR]'; break;
+                    case 'data': colorClass = 'text-on-surface'; prefix = '[DATA]'; break;
+                }
+                return (
+                  <div key={idx} className={`mb-1 ${colorClass}`}>
+                    <span className="opacity-40">{`[${new Date().toLocaleTimeString()}]`}</span> {prefix} {log.text}
+                  </div>
+                )
+             })}
+            {loading && <div className="inline-block w-2 h-4 bg-primary animate-pulse ml-1"></div>}
+            <div ref={logsEndRef} />
+          </div>
+
+          {/* Terminal Footer Stats */}
+          <div className="bg-surface px-4 py-1 border-t border-outline-variant flex justify-between items-center text-[10px] uppercase font-mono tracking-widest text-on-surface-variant opacity-60">
+            <div className="flex gap-4">
+              <span>Ln: {logs.length}, Col: 1</span>
+              <span>UTF-8</span>
+            </div>
+            <div className="flex gap-4">
+              <span>Status: {loading ? 'ACTIVE' : 'IDLE'}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

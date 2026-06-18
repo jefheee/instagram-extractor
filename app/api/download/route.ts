@@ -4,17 +4,35 @@ import { spawn } from 'child_process';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { url, type, targetDir, options } = body;
+    const { url, targetDir, mode, options } = body;
 
-    if (!url) {
-      return NextResponse.json({ error: 'URL ou @username é obrigatório.' }, { status: 400 });
+    let target = url || '';
+    
+    // 1. Parser and Sanitization via Regex
+    target = target.trim();
+    target = target.replace(/\?.*$/, ''); // Remove query params
+    
+    let isShortcode = false;
+    let shortcode = '';
+    
+    const postMatch = target.match(/(?:\/p\/|\/reel\/|\/reels\/)([A-Za-z0-9_-]+)/);
+    const storyMatch = target.match(/\/stories\/([A-Za-z0-9_.-]+)\/?([0-9]+)?/);
+    
+    if (postMatch && mode !== 'saved') {
+      isShortcode = true;
+      shortcode = postMatch[1];
+    } else if (storyMatch && mode !== 'saved') {
+      target = storyMatch[1]; // Set target to username
+    } else {
+      const profileUrlMatch = target.match(/(?:https?:\/\/)?(?:www\.)?instagram\.com\/([A-Za-z0-9_.-]+)/);
+      if (profileUrlMatch) {
+         target = profileUrlMatch[1];
+      }
+      if (target.startsWith('@')) target = target.substring(1);
     }
 
-    const cleanUrl = url.trim();
-    let target = cleanUrl;
-    
-    if (target.startsWith('@')) {
-      target = target.substring(1);
+    if (!target && mode !== 'saved') {
+      return NextResponse.json({ error: 'URL ou username inválido.' }, { status: 400 });
     }
 
     const encoder = new TextEncoder();
@@ -25,7 +43,7 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ log: msg })}\n\n`));
         };
 
-        sendLog(`[Sistema] Iniciando extração para: ${target}`);
+        sendLog(`[Sistema] Modo Ativo: ${mode.toUpperCase()} | Alvo Identificado: ${mode === 'saved' ? ':saved' : (isShortcode ? shortcode : target)}`);
         
         let finalDirPattern = targetDir && targetDir.trim() !== '' 
           ? `${targetDir.trim()}/{profile}`.replace(/\\/g, '/') 
@@ -33,11 +51,14 @@ export async function POST(request: NextRequest) {
 
         let args: string[] = [];
         
-        if (process.env.IG_USERNAME) {
-           sendLog(`[Sistema] IG_USERNAME detectado. Iniciando sessão com: ${process.env.IG_USERNAME}`);
+        // Auth Logic & 400 Mitigation (forceAnonymous)
+        if (process.env.IG_USERNAME && (!options || !options.forceAnonymous)) {
+           sendLog(`[Sistema] Sessão detectada. Autenticando como: ${process.env.IG_USERNAME}`);
            args.push(`--login=${process.env.IG_USERNAME}`);
+        } else if (options && options.forceAnonymous) {
+           sendLog(`[Sistema] Executando em MODO ANÔNIMO FORÇADO (Sem Login).`);
         } else {
-           sendLog(`[Sistema] Modo anônimo. Defina IG_USERNAME no .env para conteúdo restrito.`);
+           sendLog(`[Sistema] MODO ANÔNIMO. Defina IG_USERNAME para conteúdo restrito.`);
         }
 
         args.push(`--dirname-pattern=${finalDirPattern}`);
@@ -63,35 +84,39 @@ export async function POST(request: NextRequest) {
           }
 
           if (options.noVideos) args.push('--no-videos');
-          
-          if (options.noCaptions) {
-            args.push('--no-captions');
-          } else {
-            args.push('--post-metadata-txt={caption}');
-          }
-
-          if (options.noMetadata) {
-            args.push('--no-metadata-json');
-          }
-
+          if (options.noCaptions) args.push('--no-captions');
+          if (options.noMetadata) args.push('--no-metadata-json');
           if (options.noProfilePic) args.push('--no-profile-pic');
-          if (options.stories) args.push('--stories');
-          if (options.highlights) args.push('--highlights');
           if (options.comments) args.push('--comments');
           if (options.fastUpdate) args.push('--fast-update');
+          
+          if (!options.noCaptions) {
+            args.push('--post-metadata-txt={caption}');
+          }
         } else {
           args.push('--post-metadata-txt={caption}');
         }
 
         args.push('--no-video-thumbnails');
         
-        if (options && options.saved) {
+        // 2. Mode and Target execution setup
+        if (mode === 'saved') {
            args.push(':saved');
-        } else if (options && options.tagged) {
+        } else if (mode === 'stories') {
+           args.push('--stories');
+           args.push('--no-posts');
+           args.push('--no-profile-pic');
            args.push(target);
-           args.push(':tagged');
+        } else if (isShortcode || mode === 'post') {
+           let codeToUse = shortcode || target;
+           args.push('--');
+           args.push(`-${codeToUse}`);
         } else {
+           // Profile feed
            args.push(target);
+           if (options && options.tagged) {
+             args.push(':tagged');
+           }
         }
 
         const child = spawn('python', ['-m', 'instaloader', ...args]);

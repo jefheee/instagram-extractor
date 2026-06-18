@@ -1,53 +1,40 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  Search,
-  Loader2,
-  AlertCircle,
-  ChevronRight,
+import { 
+  Search, 
+  Loader2, 
+  AlertCircle, 
   Terminal,
   FolderOpen,
-  Settings
+  User,
+  Image as ImageIcon,
+  History,
+  Bookmark,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
-
-const InstagramIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-  </svg>
-);
 
 export default function Home() {
   const [url, setUrl] = useState('');
   const [targetDir, setTargetDir] = useState('');
-  const [showOptions, setShowOptions] = useState(false);
+  const [mode, setMode] = useState('profile');
+  
   const [options, setOptions] = useState({
     noVideos: false,
     noCaptions: false,
     noMetadata: false,
     noProfilePic: false,
-    stories: false,
-    highlights: false,
+    tagged: false,
     comments: false,
     fastUpdate: false,
-    tagged: false,
-    saved: false,
+    forceAnonymous: false,
     count: '',
     minLikes: '',
     minComments: '',
     filenamePattern: '{date_utc}_UTC'
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
@@ -63,7 +50,7 @@ export default function Home() {
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!url.trim()) return;
+    if (!url.trim() && mode !== 'saved') return;
 
     setLoading(true);
     setError(null);
@@ -73,7 +60,7 @@ export default function Home() {
       const res = await fetch('/api/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, type: 'auto', targetDir, options }),
+        body: JSON.stringify({ url, targetDir, mode, options }),
       });
 
       if (!res.ok) {
@@ -82,7 +69,7 @@ export default function Home() {
       }
 
       if (!res.body) {
-        throw new Error("Stream não suportada pelo navegador.");
+         throw new Error("Stream não suportada pelo navegador.");
       }
 
       const reader = res.body.getReader();
@@ -106,7 +93,7 @@ export default function Home() {
                   setLoading(false);
                 }
               } catch (e) {
-                // ignore parse errors
+                 // ignore parse errors
               }
             }
           }
@@ -123,8 +110,7 @@ export default function Home() {
       const text = await navigator.clipboard.readText();
       setUrl(text);
     } catch (err: any) {
-      alert("Permissão negada ou restrição de HTTP. Pressione Ctrl+V para colar na barra.");
-      console.error(err);
+      alert("Permissão negada ou restrição. Cole manualmente.");
     }
   };
 
@@ -146,211 +132,223 @@ export default function Home() {
           </span>
         </div>
         <div className="text-xs text-slate-400 font-mono bg-zinc-900/60 px-3.5 py-1.5 rounded-full border border-zinc-850 uppercase tracking-wide">
-          v3.0 // Instaloader Core
+          v4.0 // Bento Architecture
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto mt-16 md:mt-24 flex flex-col items-center">
-        <div className="text-center mb-8 max-w-2xl">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-4 leading-tight">
-            Extração Nativa via <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-pink-500 bg-clip-text text-transparent">Instaloader</span>
+      <section className="max-w-7xl mx-auto mt-12 flex flex-col gap-6">
+        <div className="text-center mb-6 max-w-2xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+            Extraction <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-pink-500 bg-clip-text text-transparent">Dashboard</span>
           </h1>
           <p className="text-slate-400 text-sm md:text-base leading-relaxed">
-            Insira a URL do post, story ou usuário para extrair as mídias em background e baixar em lote.
+            Controle granular e execução nativa em lote para Instagram.
           </p>
         </div>
 
-        <form onSubmit={handleSearch} className="w-full max-w-3xl mb-4">
-          <div className="glass-panel p-3 rounded-2xl shadow-2xl flex flex-col gap-3">
-            <div className="flex flex-col md:flex-row items-center gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Bloco 1: Omnibox Inteligente (Col 1-2) */}
+          <div className="md:col-span-2 glass-panel p-6 rounded-2xl shadow-2xl flex flex-col gap-4 border border-zinc-800/50">
+            <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Alvo & Diretório</h3>
+            
+            <div className="flex flex-col gap-4">
               <div className="relative w-full flex items-center">
                 <Search className="absolute left-4 w-5 h-5 text-slate-500" />
                 <input
                   type="text"
-                  placeholder="Insira a URL ou @username..."
+                  placeholder={mode === 'saved' ? 'Posts Salvos (Ignora este campo)' : 'URL, Shortcode ou @username...'}
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="w-full bg-transparent pl-12 pr-20 py-3.5 text-white placeholder-slate-500 focus:outline-none text-sm md:text-base border border-zinc-800/30 rounded-xl"
+                  disabled={mode === 'saved'}
+                  className="w-full bg-zinc-900/50 pl-12 pr-20 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 text-sm md:text-base border border-zinc-800/50 rounded-xl disabled:opacity-50"
                 />
                 <button
                   type="button"
                   onClick={handlePaste}
-                  className="absolute right-3 px-2.5 py-1 text-xs text-indigo-400 font-medium hover:text-indigo-300 transition-colors bg-indigo-500/10 rounded-md border border-indigo-500/20"
+                  disabled={mode === 'saved'}
+                  className="absolute right-3 px-2.5 py-1 text-xs text-indigo-400 font-medium hover:text-indigo-300 transition-colors bg-indigo-500/10 rounded-md border border-indigo-500/20 disabled:opacity-50"
                 >
                   Colar
                 </button>
               </div>
+
+              <div className="relative w-full flex items-center">
+                <FolderOpen className="absolute left-4 w-5 h-5 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Caminho Absoluto de Salvamento (Padrão: ./downloads/)"
+                  value={targetDir}
+                  onChange={(e) => setTargetDir(e.target.value)}
+                  className="w-full bg-zinc-900/50 pl-12 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 text-sm md:text-base border border-zinc-800/50 rounded-xl"
+                />
+              </div>
+
               <button
-                type="submit"
-                disabled={loading || !url.trim()}
-                className="w-full md:w-auto bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-medium text-sm md:text-base px-8 py-3.5 rounded-xl shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+                type="button"
+                onClick={handleSearch}
+                disabled={loading || (!url.trim() && mode !== 'saved')}
+                className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-medium text-sm md:text-base px-8 py-3.5 rounded-xl shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
               >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <span>Extrair</span>
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </>
-                )}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Iniciar Extração</span>}
+              </button>
+            </div>
+          </div>
+
+          {/* Bloco 2: Modo de Operação (Col 3) */}
+          <div className="md:col-span-1 glass-panel p-6 rounded-2xl shadow-2xl flex flex-col gap-4 border border-zinc-800/50">
+            <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Modo de Operação</h3>
+            
+            <div className="grid grid-cols-2 gap-3 flex-1">
+              <button onClick={() => setMode('profile')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${mode === 'profile' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300' : 'bg-zinc-900/50 border-zinc-800/50 text-slate-400 hover:bg-zinc-800'}`}>
+                <User className="w-5 h-5" /> <span className="text-xs font-semibold">Perfil</span>
+              </button>
+              <button onClick={() => setMode('post')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${mode === 'post' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300' : 'bg-zinc-900/50 border-zinc-800/50 text-slate-400 hover:bg-zinc-800'}`}>
+                <ImageIcon className="w-5 h-5" /> <span className="text-xs font-semibold">Post/Reel</span>
+              </button>
+              <button onClick={() => setMode('stories')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${mode === 'stories' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300' : 'bg-zinc-900/50 border-zinc-800/50 text-slate-400 hover:bg-zinc-800'}`}>
+                <History className="w-5 h-5" /> <span className="text-xs font-semibold">Stories</span>
+              </button>
+              <button onClick={() => setMode('saved')} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${mode === 'saved' ? 'bg-pink-500/20 border-pink-500 text-pink-300' : 'bg-zinc-900/50 border-zinc-800/50 text-slate-400 hover:bg-zinc-800'}`}>
+                <Bookmark className="w-5 h-5" /> <span className="text-xs font-semibold">Salvos</span>
               </button>
             </div>
 
-            <div className="relative w-full flex items-center border-t border-zinc-800/30 pt-3">
-              <FolderOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 mt-1.5" />
-              <input
-                type="text"
-                placeholder="Caminho de Salvamento (Opcional, ex: C:\Acervo)"
-                value={targetDir}
-                onChange={(e) => setTargetDir(e.target.value)}
-                className="w-full bg-transparent pl-12 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm md:text-base"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowOptions(!showOptions)}
-              className="flex items-center gap-2 text-sm text-slate-400 hover:text-indigo-400 transition-colors mt-1 w-fit"
+            <div 
+              onClick={() => toggleOption('forceAnonymous')}
+              className={`mt-2 flex items-center justify-between p-3.5 rounded-xl border transition-colors cursor-pointer select-none ${options.forceAnonymous ? 'bg-indigo-500/10 border-indigo-500/40' : 'bg-zinc-900/50 border-zinc-800/50'}`}
             >
-              <Settings className="w-4 h-4" />
-              <span>Opções Avançadas</span>
-              <ChevronRight className={`w-4 h-4 transition-transform ${showOptions ? 'rotate-90' : ''}`} />
-            </button>
-
-            {showOptions && (
-              <div className="flex flex-col gap-6 mt-3 p-4 md:p-6 bg-zinc-950/40 rounded-xl border border-zinc-800/40">
-                {/* A) Filtros e Limites de Volume */}
-                <div>
-                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3">Filtros e Volume</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs text-slate-400">Limite de Posts (--count)</label>
-                      <input 
-                        type="number" 
-                        placeholder="Ex: 50" 
-                        value={options.count} 
-                        onChange={(e) => handleOptionChange('count', e.target.value)}
-                        className="w-full bg-zinc-900 px-3 py-2 text-white text-sm focus:outline-none border border-zinc-800 rounded-lg"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs text-slate-400">Mínimo de Curtidas</label>
-                      <input 
-                        type="number" 
-                        placeholder="Ex: 100" 
-                        value={options.minLikes} 
-                        onChange={(e) => handleOptionChange('minLikes', e.target.value)}
-                        className="w-full bg-zinc-900 px-3 py-2 text-white text-sm focus:outline-none border border-zinc-800 rounded-lg"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs text-slate-400">Mínimo de Comentários</label>
-                      <input 
-                        type="number" 
-                        placeholder="Ex: 10" 
-                        value={options.minComments} 
-                        onChange={(e) => handleOptionChange('minComments', e.target.value)}
-                        className="w-full bg-zinc-900 px-3 py-2 text-white text-sm focus:outline-none border border-zinc-800 rounded-lg"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* B) Escopo e Alvos Especiais */}
-                <div>
-                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3">Escopo e Comportamento</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
-                    {[
-                      { key: 'noVideos', label: 'Ignorar Vídeos (Apenas Imagens)' },
-                      { key: 'noCaptions', label: 'Ignorar Legendas (.txt)' },
-                      { key: 'noMetadata', label: 'Ignorar Metadados (.json)' },
-                      { key: 'noProfilePic', label: 'Ignorar Foto de Perfil' },
-                      { key: 'stories', label: 'Baixar Stories' },
-                      { key: 'highlights', label: 'Baixar Destaques' },
-                      { key: 'comments', label: 'Baixar Comentários' },
-                      { key: 'fastUpdate', label: 'Atualização Rápida (Pular existentes)' },
-                      { key: 'tagged', label: 'Baixar Posts Marcados (Tagged)' },
-                      { key: 'saved', label: 'Baixar Posts Salvos (Requer login)' }
-                    ].map(({ key, label }) => (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-slate-300">{label}</span>
-                        <button
-                          type="button"
-                          onClick={() => toggleOption(key as keyof typeof options)}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${options[key as keyof typeof options] ? 'bg-indigo-500' : 'bg-zinc-700'}`}
-                        >
-                          <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${options[key as keyof typeof options] ? 'translate-x-4' : 'translate-x-0'}`} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* C) Customização de Arquivos */}
-                <div>
-                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3">Customização de Arquivos</h4>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs text-slate-400">Padrão de Nome de Arquivo (--filename-pattern)</label>
-                    <select 
-                      value={options.filenamePattern}
-                      onChange={(e) => handleOptionChange('filenamePattern', e.target.value)}
-                      className="w-full bg-zinc-900 px-3 py-2.5 text-white text-sm focus:outline-none border border-zinc-800 rounded-lg"
-                    >
-                      <option value="{date_utc}_UTC">Padrão (Data e Hora UTC)</option>
-                      <option value="{shortcode}_{profile}">ID do Post + Usuário</option>
-                      <option value="{date_utc}_UTC_{shortcode}">Cronológico Completo</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </form>
-
-        <p className="text-amber-400/80 text-xs text-center font-medium max-w-xl mb-12">
-          Aviso: Extrações em lote rodarão os arquivos para a pasta local ./downloads. Certifique-se de estar rodando em ambiente localhost.
-        </p>
-
-        {error && (
-          <div className="w-full max-w-3xl glass-panel border-red-500/30 p-4 rounded-xl flex items-start gap-3 text-red-400 mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
-            <div>
-              <h3 className="font-semibold text-sm">Falha no Processamento</h3>
-              <p className="text-xs text-slate-400 mt-1">{error}</p>
+              <span className="text-xs font-medium text-slate-300">Modo Anônimo (Evita Erro 400)</span>
+              {options.forceAnonymous ? <ToggleRight className="w-5 h-5 text-indigo-400" /> : <ToggleLeft className="w-5 h-5 text-zinc-600" />}
             </div>
           </div>
-        )}
 
-        {/* Terminal View */}
-        <div className="w-full max-w-3xl glass-panel rounded-2xl overflow-hidden shadow-2xl p-0 flex flex-col h-96 border border-zinc-800/60 animate-in fade-in zoom-in-95 duration-500">
-          <div className="bg-zinc-950/80 p-3 border-b border-zinc-800/60 flex items-center gap-3">
-            <Terminal className="w-5 h-5 text-indigo-400" />
-            <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">Terminal Instaloader</span>
-            {loading && <Loader2 className="w-4 h-4 text-indigo-400 animate-spin ml-auto" />}
+          {/* Bloco 3: Switches de Mídia (Col 1) */}
+          <div className="md:col-span-1 glass-panel p-6 rounded-2xl shadow-2xl flex flex-col gap-4 border border-zinc-800/50">
+            <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Exclusões & Escopo</h3>
+            <div className="flex flex-col gap-3">
+              {[
+                { key: 'noVideos', label: 'Ignorar Vídeos' },
+                { key: 'noCaptions', label: 'Ignorar Legendas (.txt)' },
+                { key: 'noMetadata', label: 'Ignorar Metadados (.json)' },
+                { key: 'noProfilePic', label: 'Ignorar Foto de Perfil' },
+                { key: 'comments', label: 'Baixar Comentários' },
+                { key: 'fastUpdate', label: 'Atualização Rápida (Pular)' },
+                { key: 'tagged', label: 'Posts Marcados (Tagged)' }
+              ].map(({ key, label }) => (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-slate-300">{label}</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleOption(key as keyof typeof options)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${options[key as keyof typeof options] ? 'bg-indigo-500' : 'bg-zinc-700'}`}
+                  >
+                    <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${options[key as keyof typeof options] ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="flex-1 bg-black/60 p-4 overflow-y-auto font-mono text-xs md:text-sm text-slate-300 space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-            {logs.length === 0 ? (
-              <div className="text-slate-600 flex items-center h-full justify-center">
-                Aguardando inicialização do processo...
-              </div>
-            ) : (
-              logs.map((log, idx) => {
-                let logClass = "text-slate-300";
-                if (log.includes("[Erro]") || log.includes("[stderr]")) logClass = "text-red-400";
-                if (log.includes("[Sistema]")) logClass = "text-indigo-400 font-medium";
-
-                return (
-                  <div key={idx} className={`${logClass} break-all`}>
-                    <span className="text-slate-600 mr-2 select-none">~</span>{log}
+          {/* Bloco 4: Filtros & Nomenclatura (Col 2-3) */}
+          <div className="md:col-span-2 glass-panel p-6 rounded-2xl shadow-2xl flex flex-col gap-4 border border-zinc-800/50">
+            <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Filtros Avançados & Nomenclatura</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+              <div className="flex flex-col gap-4 justify-between">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-slate-400">Limite de Posts (--count)</label>
+                  <input 
+                    type="number" 
+                    placeholder="Deixe em branco para ilimitado" 
+                    value={options.count} 
+                    onChange={(e) => handleOptionChange('count', e.target.value)}
+                    className="w-full bg-zinc-900/60 px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500/50 border border-zinc-800/80 rounded-lg"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs text-slate-400">Mín. Curtidas</label>
+                    <input 
+                      type="number" 
+                      placeholder="Ex: 100" 
+                      value={options.minLikes} 
+                      onChange={(e) => handleOptionChange('minLikes', e.target.value)}
+                      className="w-full bg-zinc-900/60 px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500/50 border border-zinc-800/80 rounded-lg"
+                    />
                   </div>
-                );
-              })
-            )}
-            <div ref={logsEndRef} />
-          </div>
-        </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs text-slate-400">Mín. Comments</label>
+                    <input 
+                      type="number" 
+                      placeholder="Ex: 10" 
+                      value={options.minComments} 
+                      onChange={(e) => handleOptionChange('minComments', e.target.value)}
+                      className="w-full bg-zinc-900/60 px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500/50 border border-zinc-800/80 rounded-lg"
+                    />
+                  </div>
+                </div>
+              </div>
 
+              <div className="flex flex-col gap-4 justify-start">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-slate-400">Padrão de Nomenclatura de Arquivos</label>
+                  <select 
+                    value={options.filenamePattern}
+                    onChange={(e) => handleOptionChange('filenamePattern', e.target.value)}
+                    className="w-full bg-zinc-900/60 px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500/50 border border-zinc-800/80 rounded-lg appearance-none"
+                  >
+                    <option value="{date_utc}_UTC">Padrão (Data e Hora UTC)</option>
+                    <option value="{shortcode}_{profile}">ID do Post + Usuário</option>
+                    <option value="{date_utc}_UTC_{shortcode}">Cronológico Completo</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="md:col-span-3 glass-panel border-red-500/30 p-4 rounded-xl flex items-start gap-3 text-red-400 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+              <div>
+                <h3 className="font-semibold text-sm">Falha no Processamento</h3>
+                <p className="text-xs text-slate-400 mt-1">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Bloco 5: Terminal View (Col 1-3) */}
+          <div className="md:col-span-3 glass-panel rounded-2xl overflow-hidden shadow-2xl p-0 flex flex-col h-96 border border-zinc-800/60">
+            <div className="bg-zinc-950/80 p-3 border-b border-zinc-800/60 flex items-center gap-3">
+              <Terminal className="w-5 h-5 text-indigo-400" />
+              <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">Terminal Instaloader</span>
+              {loading && <Loader2 className="w-4 h-4 text-indigo-400 animate-spin ml-auto" />}
+            </div>
+            
+            <div className="flex-1 bg-black/60 p-4 overflow-y-auto font-mono text-xs md:text-sm text-slate-300 space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+              {logs.length === 0 ? (
+                <div className="text-slate-600 flex items-center h-full justify-center">
+                  Aguardando inicialização do processo...
+                </div>
+              ) : (
+                logs.map((log, idx) => {
+                  let logClass = "text-slate-300";
+                  if (log.includes("[Erro]") || log.includes("[stderr]")) logClass = "text-red-400";
+                  if (log.includes("[Sistema]")) logClass = "text-indigo-400 font-medium";
+                  
+                  return (
+                    <div key={idx} className={`${logClass} break-all`}>
+                      <span className="text-slate-600 mr-2 select-none">~</span>{log}
+                    </div>
+                  );
+                })
+              )}
+              <div ref={logsEndRef} />
+            </div>
+          </div>
+
+        </div>
       </section>
     </main>
   );

@@ -16,22 +16,20 @@ export default function DocsPage() {
             <span className="text-[11px] font-mono text-on-surface-variant">LATEST: V2.4.0</span>
           </div>
           <h1 className="text-4xl text-on-surface mb-4 font-bold">
-            InstaVault Deep Dive Documentation
+            {t('docs.title')}
           </h1>
           <p className="text-lg text-on-surface-variant max-w-2xl">
-            Entenda o funcionamento interno da arquitetura local do InstaVault, o fluxo de comunicação de Server-Sent Events, os comandos de autenticação nativos e o que cada switch avançado executa no seu sistema operacional.
+            {t('docs.intro')}
           </p>
         </header>
 
-        {/* Section: Architecture */}
         <section className="mb-16">
           <div className="flex items-center gap-2 mb-4">
             <div className="h-6 w-1 bg-primary"></div>
-            <h2 className="text-2xl font-semibold text-on-surface">Arquitetura de Comunicação (SSE)</h2>
+            <h2 className="text-2xl font-semibold text-on-surface">{t('docs.arch.title')}</h2>
           </div>
           <p className="text-base text-on-surface-variant mb-6 leading-relaxed">
-            O InstaVault não é um "backend na nuvem" tradicional. Ele atua como um <strong>Local Wrapper</strong>, envelopando o CLI do Instaloader de maneira segura e persistente.
-            A comunicação flui através de <strong>Server-Sent Events (SSE)</strong>: a interface Next.js despacha configurações para uma rota de API (`/api/download/route.ts`), que invoca um <code>spawn</code> do processo Python no host. Toda a saída padrão (`stdout` e `stderr`) é capturada assincronamente e "streamada" em tempo real de volta para o cliente, alimentando o Terminal View sem timeouts convencionais de HTTP.
+            {t('docs.arch.desc1')}
           </p>
 
           <div className="bg-[#050505] rounded-lg overflow-hidden border border-outline-variant font-mono">
@@ -52,111 +50,108 @@ child.stdout.on('data', (data) => {
           </div>
         </section>
 
-        {/* Section: Initialization */}
         <section className="mb-16">
           <div className="flex items-center gap-2 mb-4">
             <div className="h-6 w-1 bg-primary"></div>
-            <h2 className="text-2xl font-semibold text-on-surface">Guia de Inicialização do Motor Local (Auth)</h2>
+            <h2 className="text-2xl font-semibold text-on-surface">{t('docs.auth.title')}</h2>
           </div>
           <p className="text-base text-on-surface-variant mb-4">
-            Para extrair dados contínuos sem bloqueios do Instagram (conteúdo de perfil fechado, stories ou salvos), é necessário gerar um estado de sessão criptografada no sistema operacional host. O InstaVault detectará e reaproveitará essa sessão automaticamente.
+            {t('docs.auth.desc')}
           </p>
           <div className="bg-[#050505] rounded-lg overflow-hidden border border-outline-variant font-mono mb-4">
             <div className="p-4 overflow-x-auto text-[13px] leading-relaxed">
               <span className="text-primary">$</span> <span className="text-on-surface">python -m instaloader --login=SEU_USUARIO</span><br />
-              <span className="text-outline">[*] O CLI solicitará sua senha.</span><br />
-              <span className="text-outline">[*] Após logar, o cookie de sessão é persistido localmente em:</span><br />
+              <span className="text-outline">[*] {t('docs.auth.cli1')}</span><br />
+              <span className="text-outline">[*] {t('docs.auth.cli2')}</span><br />
               <span className="text-outline">[*] (Windows) %LOCALAPPDATA%\\Instaloader\\session-SEU_USUARIO</span>
             </div>
           </div>
-          <p className="text-sm text-on-surface-variant">Após este comando, certifique-se de configurar a variável de ambiente <code>IG_USERNAME</code> no <code>.env.local</code> do projeto Next.js, ou o sistema forçará modo anônimo.</p>
+          <p className="text-sm text-on-surface-variant">{t('docs.auth.footer')}</p>
         </section>
 
-        {/* Section: Flags Breakdown */}
         <section className="mb-16">
           <div className="flex items-center gap-2 mb-4">
             <div className="h-6 w-1 bg-primary"></div>
-            <h2 className="text-2xl font-semibold text-on-surface">Tabela Exaustiva de Funcionalidades</h2>
+            <h2 className="text-2xl font-semibold text-on-surface">{t('docs.flags.title')}</h2>
           </div>
           <div className="bg-surface border border-outline-variant rounded-xl overflow-hidden">
             <table className="w-full text-left text-sm text-on-surface-variant">
               <thead className="text-[11px] uppercase tracking-widest bg-surface-container-high text-on-surface border-b border-outline-variant font-mono">
                 <tr>
-                  <th scope="col" className="px-6 py-4">Switch UI</th>
-                  <th scope="col" className="px-6 py-4">Flag Subjacente</th>
-                  <th scope="col" className="px-6 py-4">Ação Exata no Terminal</th>
+                  <th scope="col" className="px-6 py-4">{t('docs.table.ui')}</th>
+                  <th scope="col" className="px-6 py-4">{t('docs.table.flag')}</th>
+                  <th scope="col" className="px-6 py-4">{t('docs.table.action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
                 <tr className="hover:bg-surface-container-low transition-colors">
-                  <td className="px-6 py-4 font-mono text-on-surface">Ignorar Vídeos</td>
+                  <td className="px-6 py-4 font-mono text-on-surface">{t('dash.scope.noVideos')}</td>
                   <td className="px-6 py-4 font-mono text-primary">--no-videos</td>
-                  <td className="px-6 py-4 text-xs">Pula o download de `.mp4`. Economiza banda ao baixar apenas metadados/fotos.</td>
+                  <td className="px-6 py-4 text-xs">{t('docs.flag.noVideos.desc')}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
-                  <td className="px-6 py-4 font-mono text-on-surface">Ignorar Legendas</td>
+                  <td className="px-6 py-4 font-mono text-on-surface">{t('dash.scope.noCaptions')}</td>
                   <td className="px-6 py-4 font-mono text-primary">--no-captions</td>
-                  <td className="px-6 py-4 text-xs">Desativa a geração do arquivo `.txt` contendo a legenda descritiva do post.</td>
+                  <td className="px-6 py-4 text-xs">{t('docs.flag.noCaptions.desc')}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
-                  <td className="px-6 py-4 font-mono text-on-surface">Ignorar Metadados</td>
+                  <td className="px-6 py-4 font-mono text-on-surface">{t('dash.scope.noMetadata')}</td>
                   <td className="px-6 py-4 font-mono text-primary">--no-metadata-json</td>
-                  <td className="px-6 py-4 text-xs">Impede a criação do pacote `.json.xz` bruto da Graph API do Instagram.</td>
+                  <td className="px-6 py-4 text-xs">{t('docs.flag.noMetadata.desc')}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
-                  <td className="px-6 py-4 font-mono text-on-surface">Ignorar Foto Perfil</td>
+                  <td className="px-6 py-4 font-mono text-on-surface">{t('dash.scope.noProfilePic')}</td>
                   <td className="px-6 py-4 font-mono text-primary">--no-profile-pic</td>
-                  <td className="px-6 py-4 text-xs">Geralmente injetado automaticamente para evitar lixo no diretório de destino.</td>
+                  <td className="px-6 py-4 text-xs">{t('docs.flag.noProfilePic.desc')}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
-                  <td className="px-6 py-4 font-mono text-on-surface">Baixar Stories/Destaques</td>
+                  <td className="px-6 py-4 font-mono text-on-surface">{t('dash.scope.stories')}</td>
                   <td className="px-6 py-4 font-mono text-primary">--stories / --highlights</td>
-                  <td className="px-6 py-4 text-xs">Extrai metadados voláteis (Requer Autenticação e Sessão local).</td>
+                  <td className="px-6 py-4 text-xs">{t('docs.flag.stories.desc')}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
-                  <td className="px-6 py-4 font-mono text-on-surface">Atualização Rápida</td>
+                  <td className="px-6 py-4 font-mono text-on-surface">{t('dash.scope.fastUpdate')}</td>
                   <td className="px-6 py-4 font-mono text-primary">--fast-update</td>
-                  <td className="px-6 py-4 text-xs">Interrompe a raspagem de um perfil quando o sistema atinge o primeiro arquivo que já existe localmente. Ideal para CRON Jobs.</td>
+                  <td className="px-6 py-4 text-xs">{t('docs.flag.fastUpdate.desc')}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
-                  <td className="px-6 py-4 font-mono text-on-surface">Filtros de Engajamento</td>
+                  <td className="px-6 py-4 font-mono text-on-surface">{t('dash.filters.title')}</td>
                   <td className="px-6 py-4 font-mono text-primary">--post-filter</td>
-                  <td className="px-6 py-4 text-xs">O InstaVault converte "Min Curtidas" e "Min Comentários" para um eval dinâmico: `likes >= X and comments >= Y`.</td>
+                  <td className="px-6 py-4 text-xs">{t('docs.flag.filters.desc')}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </section>
 
-        {/* Section: File Breakdown */}
         <section className="mb-16">
           <div className="flex items-center gap-2 mb-4">
             <div className="h-6 w-1 bg-primary"></div>
-            <h2 className="text-2xl font-semibold text-on-surface">Breakdown de Arquivos de Saída</h2>
+            <h2 className="text-2xl font-semibold text-on-surface">{t('docs.files.title')}</h2>
           </div>
           <p className="text-base text-on-surface-variant mb-6">
-            O InstaVault estrutura os downloads em diretórios atrelados à tag de perfil (`targetDir/{"{profile}"}`). Dentro desse diretório isolado, cada postagem extraída gera o seguinte conjunto de artefatos padrão:
+            {t('docs.files.desc')}
           </p>
           <div className="space-y-4">
             <div className="p-4 bg-surface-container border border-outline-variant rounded-lg flex flex-col sm:flex-row sm:items-start gap-4">
                <div className="font-mono text-primary bg-background px-3 py-1 rounded text-[13px] border border-outline-variant shrink-0 text-center">.jpg / .mp4</div>
                <div>
-                  <h4 className="font-semibold text-on-surface mb-1">Mídia Bruta (Raw Media)</h4>
-                  <p className="text-sm text-on-surface-variant">A imagem ou vídeo original em alta resolução. Caso um carrossel seja baixado, o sufixo numérico será incrementado.</p>
+                  <h4 className="font-semibold text-on-surface mb-1">{t('docs.files.raw.title')}</h4>
+                  <p className="text-sm text-on-surface-variant">{t('docs.files.raw.desc')}</p>
                </div>
             </div>
             <div className="p-4 bg-surface-container border border-outline-variant rounded-lg flex flex-col sm:flex-row sm:items-start gap-4">
                <div className="font-mono text-primary bg-background px-3 py-1 rounded text-[13px] border border-outline-variant shrink-0 text-center w-[120px]">.txt</div>
                <div>
-                  <h4 className="font-semibold text-on-surface mb-1">Legenda Limpa (Caption Payload)</h4>
-                  <p className="text-sm text-on-surface-variant">Instruído pela flag `--post-metadata-txt={"{caption}"}`, o InstaVault gera um arquivo .txt legível que contém unicamente o texto da legenda redigido, pronto para análise semântica ou NLP.</p>
+                  <h4 className="font-semibold text-on-surface mb-1">{t('docs.files.txt.title')}</h4>
+                  <p className="text-sm text-on-surface-variant">{t('docs.files.txt.desc')}</p>
                </div>
             </div>
             <div className="p-4 bg-surface-container border border-outline-variant rounded-lg flex flex-col sm:flex-row sm:items-start gap-4">
                <div className="font-mono text-primary bg-background px-3 py-1 rounded text-[13px] border border-outline-variant shrink-0 text-center w-[120px]">.json.xz</div>
                <div>
-                  <h4 className="font-semibold text-on-surface mb-1">Dump da Graph API do Instagram</h4>
-                  <p className="text-sm text-on-surface-variant">Um binário compactado via XZ contendo o payload inteiro da API privada do Instagram para a referida mídia. Útil para extrair timestamps absolutos, metadados de localização ou tags em nível de código.</p>
+                  <h4 className="font-semibold text-on-surface mb-1">{t('docs.files.json.title')}</h4>
+                  <p className="text-sm text-on-surface-variant">{t('docs.files.json.desc')}</p>
                </div>
             </div>
           </div>

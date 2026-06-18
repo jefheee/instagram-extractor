@@ -38,16 +38,15 @@ export default function LandingPage() {
           setIsFadingOut(false);
           index = 0;
           isResetting = false;
-        }, 1000); // 1 second fade out before restart
+        }, 1000); 
       }
-    }, 600); // realistic typing cadence
+    }, 600);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
     <main className="relative flex-1">
-      {/* Hero Section */}
       <section className="relative min-h-[921px] flex flex-col items-center justify-center technical-grid px-gutter text-center overflow-hidden border-b border-outline-variant">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none opacity-20"></div>
         <div className="z-10 max-w-4xl pt-20">
@@ -77,7 +76,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Dashboard Preview Mockup */}
         <div className="mt-xl w-full max-w-5xl mx-auto px-md z-10 animate-fade-in-up">
           <div className="glass-panel rounded-t-xl p-1 border-b-0 shadow-2xl">
             <div className="flex items-center gap-2 px-4 py-2 border-b border-outline-variant bg-[#050505]">
@@ -101,37 +99,35 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Feature Cards */}
       <section className="py-20 px-gutter max-w-7xl mx-auto border-b border-outline-variant">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="glass-panel p-8 rounded-xl glow-hover transition-all group flex flex-col h-full">
             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors text-primary text-2xl font-bold font-mono">
                C
             </div>
-            <h3 className="text-2xl font-semibold text-on-surface mb-2">CORS Bypass</h3>
-            <p className="text-on-surface-variant flex-grow">Arquitetura local Next.js isolada de bloqueios de API e proteção de borda do Instagram.</p>
+            <h3 className="text-2xl font-semibold text-on-surface mb-2">{t('landing.feat1.title')}</h3>
+            <p className="text-on-surface-variant flex-grow">{t('landing.feat1.desc')}</p>
             <div className="mt-4 pt-4 border-t border-outline-variant font-mono text-sm text-primary">proxy_mode: "stealth"</div>
           </div>
           <div className="glass-panel p-8 rounded-xl glow-hover transition-all group flex flex-col h-full">
             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors text-primary text-2xl font-bold font-mono">
                B
             </div>
-            <h3 className="text-2xl font-semibold text-on-surface mb-2">Batch Download</h3>
-            <p className="text-on-surface-variant flex-grow">Extração de perfis completos, highlights e posts salvos diretamente para seu armazenamento local.</p>
+            <h3 className="text-2xl font-semibold text-on-surface mb-2">{t('landing.feat2.title')}</h3>
+            <p className="text-on-surface-variant flex-grow">{t('landing.feat2.desc')}</p>
             <div className="mt-4 pt-4 border-t border-outline-variant font-mono text-sm text-primary">workers: 128</div>
           </div>
           <div className="glass-panel p-8 rounded-xl glow-hover transition-all group flex flex-col h-full">
             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors text-primary text-2xl font-bold font-mono">
                S
             </div>
-            <h3 className="text-2xl font-semibold text-on-surface mb-2">Session Auth</h3>
-            <p className="text-on-surface-variant flex-grow">Gere e mantenha sua própria sessão em segurança no host com persistência robusta.</p>
+            <h3 className="text-2xl font-semibold text-on-surface mb-2">{t('landing.feat3.title')}</h3>
+            <p className="text-on-surface-variant flex-grow">{t('landing.feat3.desc')}</p>
             <div className="mt-4 pt-4 border-t border-outline-variant font-mono text-sm text-primary">auth: "hot_swap"</div>
           </div>
         </div>
       </section>
 
-      {/* Credits Footer */}
       <footer className="py-10 text-center">
          <p className="text-on-surface-variant text-sm font-mono mb-4 uppercase tracking-widest">{t('landing.credits')}</p>
          <div className="flex items-center justify-center gap-6">
@@ -140,7 +136,7 @@ export default function LandingPage() {
            </a>
            <span className="text-outline-variant">•</span>
            <a href="https://instaloader.github.io/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary-container transition-colors font-mono text-[13px] underline underline-offset-4">
-             Documentação Oficial
+             {t('landing.credits.docs')}
            </a>
          </div>
       </footer>

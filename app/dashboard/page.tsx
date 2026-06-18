@@ -8,7 +8,7 @@ export default function Dashboard() {
   const { t } = useLanguage();
   
   const [url, setUrl] = useState('');
-  const [targetDir, setTargetDir] = useState('C:\\Users\\https.jefhe\\Documents\\Benonivio Posts');
+  const [targetDir, setTargetDir] = useState('');
   const [mode, setMode] = useState('profile');
   
   const [options, setOptions] = useState({
@@ -106,25 +106,23 @@ export default function Dashboard() {
 
   return (
     <div className="h-[calc(100vh-64px)] w-full overflow-hidden flex flex-col md:flex-row gap-4 p-4 md:p-6">
-      {/* Left Column: Configuration */}
       <section className="w-full md:w-5/12 lg:w-4/12 h-full overflow-y-auto terminal-scrollbar pr-2 pb-10">
         <div className="bg-surface border border-outline-variant p-4 rounded-[4px] md:rounded-[8px]">
           <header className="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 bg-primary rounded-full animate-pulse"></span>
-              <h2 className="text-[11px] font-mono uppercase tracking-widest text-on-surface">Configuração</h2>
+              <h2 className="text-[11px] font-mono uppercase tracking-widest text-on-surface">{t('dash.config')}</h2>
             </div>
           </header>
 
           <div className="space-y-4">
-            {/* Alvo & Diretório */}
             <div className="space-y-1">
-              <label className="text-[11px] font-mono text-on-surface-variant">Alvo &amp; Diretório</label>
+              <label className="text-[11px] font-mono text-on-surface-variant">{t('dash.target.title')}</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">@</span>
                 <input 
                   className="w-full pl-8 pr-4 py-2 bg-background border border-outline-variant focus:border-primary-container outline-none font-mono text-[13px] text-on-surface transition-all rounded-[4px]" 
-                  placeholder={mode === 'saved' || options.saved ? t('dash.target.saved') : "username ou URL"} 
+                  placeholder={mode === 'saved' || options.saved ? t('dash.target.saved') : t('dash.target.placeholder')} 
                   type="text"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
@@ -133,29 +131,28 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Caminho Absoluto */}
             <div className="space-y-1">
-              <label className="text-[11px] font-mono text-on-surface-variant">Caminho Absoluto</label>
+              <label className="text-[11px] font-mono text-on-surface-variant">{t('dash.target.dir')}</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">/</span>
                 <input 
                   className="w-full pl-8 pr-4 py-2 bg-background border border-outline-variant focus:border-primary-container outline-none font-mono text-[13px] text-on-surface transition-all rounded-[4px]" 
                   type="text" 
+                  placeholder={t('dash.target.dirPlaceholder')}
                   value={targetDir}
                   onChange={(e) => setTargetDir(e.target.value)}
                 />
               </div>
             </div>
 
-            {/* Modo de Operação */}
             <div className="space-y-1">
-              <label className="text-[11px] font-mono text-on-surface-variant">Modo de Operação</label>
+              <label className="text-[11px] font-mono text-on-surface-variant">{t('dash.mode.title')}</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { id: 'profile', label: 'Profile' },
-                  { id: 'post', label: 'Post/Reel' },
-                  { id: 'stories', label: 'Stories' },
-                  { id: 'saved', label: 'Saved' }
+                  { id: 'profile', label: t('dash.mode.profile') },
+                  { id: 'post', label: t('dash.mode.post') },
+                  { id: 'stories', label: t('dash.mode.stories') },
+                  { id: 'saved', label: t('dash.mode.saved') }
                 ].map(m => (
                   <button 
                     key={m.id}
@@ -168,19 +165,18 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Chaves Booleanas Avançadas */}
             <div className="pt-4 border-t border-outline-variant mt-4">
-              <label className="text-[11px] font-mono text-on-surface-variant block mb-4">Parâmetros Booleanos</label>
+              <label className="text-[11px] font-mono text-on-surface-variant block mb-4">{t('dash.scope.title')}</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { key: 'noVideos', label: 'Ignorar Vídeos' },
-                  { key: 'noCaptions', label: 'Ignorar Legendas' },
-                  { key: 'noMetadata', label: 'Ignorar Metadados' },
-                  { key: 'noProfilePic', label: 'Ignorar Foto Perfil' },
-                  { key: 'stories', label: 'Baixar Stories' },
-                  { key: 'highlights', label: 'Baixar Destaques' },
-                  { key: 'comments', label: 'Baixar Comentários' },
-                  { key: 'fastUpdate', label: 'Atualização Rápida' },
+                  { key: 'noVideos', label: t('dash.scope.noVideos') },
+                  { key: 'noCaptions', label: t('dash.scope.noCaptions') },
+                  { key: 'noMetadata', label: t('dash.scope.noMetadata') },
+                  { key: 'noProfilePic', label: t('dash.scope.noProfilePic') },
+                  { key: 'stories', label: t('dash.scope.stories') },
+                  { key: 'highlights', label: t('dash.scope.highlights') },
+                  { key: 'comments', label: t('dash.scope.comments') },
+                  { key: 'fastUpdate', label: t('dash.scope.fastUpdate') },
                 ].map(opt => (
                   <label key={opt.key} className="flex items-center gap-2 cursor-pointer group">
                     <div className="relative">
@@ -199,12 +195,11 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Filtros e Escopo Numérico */}
             <div className="pt-4 border-t border-outline-variant mt-4">
-              <label className="text-[11px] font-mono text-on-surface-variant block mb-4">Filtros de Engajamento e Escopo</label>
+              <label className="text-[11px] font-mono text-on-surface-variant block mb-4">{t('dash.filters.title')}</label>
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-4">
-                  <span className="font-mono text-[13px] text-on-surface-variant">Limite de Posts:</span>
+                  <span className="font-mono text-[13px] text-on-surface-variant">{t('dash.filters.limit')}</span>
                   <input 
                     className="w-24 px-2 py-1 bg-background border border-outline-variant font-mono text-[13px] text-primary text-right rounded-[4px]" 
                     type="number" 
@@ -214,7 +209,7 @@ export default function Dashboard() {
                   />
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="font-mono text-[13px] text-on-surface-variant">Min Curtidas:</span>
+                  <span className="font-mono text-[13px] text-on-surface-variant">{t('dash.filters.minLikes')}</span>
                   <input 
                     className="w-24 px-2 py-1 bg-background border border-outline-variant font-mono text-[13px] text-primary text-right rounded-[4px]" 
                     type="number" 
@@ -224,7 +219,7 @@ export default function Dashboard() {
                   />
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="font-mono text-[13px] text-on-surface-variant">Min Comentários:</span>
+                  <span className="font-mono text-[13px] text-on-surface-variant">{t('dash.filters.minComments')}</span>
                   <input 
                     className="w-24 px-2 py-1 bg-background border border-outline-variant font-mono text-[13px] text-primary text-right rounded-[4px]" 
                     type="number" 
@@ -242,7 +237,7 @@ export default function Dashboard() {
                         checked={options.tagged}
                         onChange={(e) => handleOptionChange('tagged', e.target.checked)}
                       />
-                      <span className="text-[11px] font-mono text-on-surface-variant">Posts Marcados</span>
+                      <span className="text-[11px] font-mono text-on-surface-variant">{t('dash.scope.tagged')}</span>
                    </label>
                    <label className="flex items-center gap-2 cursor-pointer">
                       <input 
@@ -251,32 +246,29 @@ export default function Dashboard() {
                         checked={options.saved}
                         onChange={(e) => handleOptionChange('saved', e.target.checked)}
                       />
-                      <span className="text-[11px] font-mono text-on-surface-variant">Posts Salvos</span>
+                      <span className="text-[11px] font-mono text-on-surface-variant">{t('dash.scope.saved')}</span>
                    </label>
                 </div>
               </div>
             </div>
 
-            {/* Action Button */}
             <div className="pt-6">
               <button 
                 onClick={handleSearch}
                 disabled={loading || (!url.trim() && mode !== 'saved' && !options.saved)}
                 className="w-full bg-primary-container disabled:opacity-50 hover:bg-opacity-90 active:scale-[0.98] transition-all text-white py-4 text-lg font-bold flex items-center justify-center gap-4 rounded-[4px]"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>INICIAR EXTRAÇÃO</span>}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{t('dash.target.btn')}</span>}
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Right Column: Terminal Simulation */}
       <section className="w-full md:w-7/12 lg:w-8/12 h-full flex flex-col overflow-hidden">
         <div className="flex-1 bg-[#050505] border-t border-outline-variant relative overflow-hidden flex flex-col rounded-none">
           <div className="scanline"></div>
           
-          {/* Terminal Header */}
           <div className="flex items-center justify-between bg-surface-container-high px-4 py-2 border-b border-outline-variant shrink-0">
             <div className="flex items-center gap-2">
               <div className="flex gap-1.5">
@@ -289,10 +281,9 @@ export default function Dashboard() {
             {loading && <Loader2 className="w-3 h-3 text-primary animate-spin" />}
           </div>
           
-          {/* Terminal Logs Body */}
           <div className="flex-1 p-4 font-mono text-[13px] overflow-y-auto terminal-scrollbar selection:bg-primary-container selection:text-white pb-10">
              {logs.length === 0 && !loading && (
-               <div className="text-on-tertiary-container mb-1">[SYSTEM] Waiting for execution...</div>
+               <div className="text-on-tertiary-container mb-1">{t('dash.term.waiting')}</div>
              )}
              {logs.map((log, idx) => {
                 let colorClass = 'text-on-surface-variant';
@@ -313,7 +304,6 @@ export default function Dashboard() {
             <div ref={logsEndRef} />
           </div>
 
-          {/* Terminal Footer Stats */}
           <div className="bg-surface px-4 py-1 border-t border-outline-variant flex justify-between items-center text-[10px] uppercase font-mono tracking-widest text-on-surface-variant opacity-60 shrink-0">
             <div className="flex gap-4">
               <span>Ln: {logs.length}, Col: 1</span>

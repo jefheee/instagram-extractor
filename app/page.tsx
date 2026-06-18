@@ -7,7 +7,8 @@ import {
   AlertCircle,
   ChevronRight,
   Terminal,
-  FolderOpen
+  FolderOpen,
+  Settings
 } from 'lucide-react';
 
 const InstagramIcon = ({ className }: { className?: string }) => (
@@ -30,10 +31,25 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 export default function Home() {
   const [url, setUrl] = useState('');
   const [targetDir, setTargetDir] = useState('');
+  const [showOptions, setShowOptions] = useState(false);
+  const [options, setOptions] = useState({
+    noVideos: false,
+    noCaptions: false,
+    noMetadata: false,
+    noProfilePic: false,
+    stories: false,
+    highlights: false,
+    comments: false,
+    fastUpdate: false
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const logsEndRef = useRef<HTMLDivElement>(null);
+
+  const toggleOption = (key: keyof typeof options) => {
+    setOptions(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -47,7 +63,7 @@ export default function Home() {
       const res = await fetch('/api/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, type: 'auto', targetDir }),
+        body: JSON.stringify({ url, type: 'auto', targetDir, options }),
       });
 
       if (!res.ok) {
@@ -174,12 +190,48 @@ export default function Home() {
               <FolderOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 mt-1.5" />
               <input
                 type="text"
-                placeholder="Caminho de Salvamento (Ex: C:\Acervo)"
+                placeholder="Caminho de Salvamento (Opcional, ex: C:\Acervo)"
                 value={targetDir}
                 onChange={(e) => setTargetDir(e.target.value)}
                 className="w-full bg-transparent pl-12 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm md:text-base"
               />
             </div>
+
+            <button
+              type="button"
+              onClick={() => setShowOptions(!showOptions)}
+              className="flex items-center gap-2 text-sm text-slate-400 hover:text-indigo-400 transition-colors mt-1 w-fit"
+            >
+              <Settings className="w-4 h-4" />
+              <span>Opções Avançadas</span>
+              <ChevronRight className={`w-4 h-4 transition-transform ${showOptions ? 'rotate-90' : ''}`} />
+            </button>
+
+            {showOptions && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6 mt-1 p-4 bg-zinc-950/40 rounded-xl border border-zinc-800/40">
+                {[
+                  { key: 'noVideos', label: 'Ignorar Vídeos (Apenas Imagens)' },
+                  { key: 'noCaptions', label: 'Ignorar Legendas (.txt)' },
+                  { key: 'noMetadata', label: 'Ignorar Metadados (.json)' },
+                  { key: 'noProfilePic', label: 'Ignorar Foto de Perfil' },
+                  { key: 'stories', label: 'Baixar Stories' },
+                  { key: 'highlights', label: 'Baixar Destaques' },
+                  { key: 'comments', label: 'Baixar Comentários' },
+                  { key: 'fastUpdate', label: 'Atualização Rápida (Pular existentes)' }
+                ].map(({ key, label }) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-300">{label}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleOption(key as keyof typeof options)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${options[key as keyof typeof options] ? 'bg-indigo-500' : 'bg-zinc-700'}`}
+                    >
+                      <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${options[key as keyof typeof options] ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </form>
 

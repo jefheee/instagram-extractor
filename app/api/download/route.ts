@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { url, type, targetDir } = body;
+    const { url, type, targetDir, options } = body;
 
     if (!url) {
       return NextResponse.json({ error: 'URL ou @username é obrigatório.' }, { status: 400 });
@@ -41,12 +41,36 @@ export async function POST(request: NextRequest) {
         }
 
         args.push(`--dirname-pattern=${finalDirPattern}`);
-        args.push('--save-metadata');
-        args.push('--post-metadata-txt={caption}');
+        
+        if (options) {
+          if (options.noVideos) args.push('--no-videos');
+          
+          if (options.noCaptions) {
+            args.push('--no-captions');
+          } else {
+            args.push('--post-metadata-txt={caption}');
+          }
+
+          if (options.noMetadata) {
+            args.push('--no-metadata-json');
+          } else {
+            args.push('--save-metadata');
+          }
+
+          if (options.noProfilePic) args.push('--no-profile-pic');
+          if (options.stories) args.push('--stories');
+          if (options.highlights) args.push('--highlights');
+          if (options.comments) args.push('--comments');
+          if (options.fastUpdate) args.push('--fast-update');
+        } else {
+          args.push('--save-metadata');
+          args.push('--post-metadata-txt={caption}');
+        }
+
         args.push('--no-video-thumbnails');
         args.push(target);
 
-        const child = spawn('instaloader', args);
+        const child = spawn('python', ['-m', 'instaloader', ...args]);
 
         child.stdout.on('data', (data) => {
           const lines = data.toString().split('\n');

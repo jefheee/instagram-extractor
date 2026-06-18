@@ -6,7 +6,9 @@
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Instaloader](https://img.shields.io/badge/Instaloader-Motor_de_Extração-green?style=for-the-badge)
 
-**InstaVault** é um wrapper avançado em Next.js para extração em lote e gerenciamento granular de mídias do Instagram, utilizando todo o poder do motor CLI `instaloader` (Python). Projetado com uma interface limpa e reativa, o projeto permite realizar o bypass de CORS e orquestrar extrações complexas diretamente de um painel de controle local.
+**InstaVault** é um wrapper avançado em Next.js para extração em lote e gerenciamento granular de mídias do Instagram, utilizando todo o poder do motor CLI [instaloader](https://github.com/instaloader/instaloader) (Python). Projetado com uma interface limpa e reativa, o projeto permite realizar o bypass de CORS e orquestrar extrações complexas diretamente de um painel de controle local.
+
+> **Créditos do Motor de Extração:** O core de extração e a engenharia reversa do Instagram são providos inteiramente pela equipe do [Instaloader](https://instaloader.github.io/).
 
 ---
 

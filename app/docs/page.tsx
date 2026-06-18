@@ -149,7 +149,7 @@ child.stdout.on('data', (data) => {
                <div className="font-mono text-primary bg-background px-3 py-1 rounded text-[13px] border border-outline-variant shrink-0 text-center w-[120px]">.txt</div>
                <div>
                   <h4 className="font-semibold text-on-surface mb-1">Legenda Limpa (Caption Payload)</h4>
-                  <p className="text-sm text-on-surface-variant">Instruído pela flag `--post-metadata-txt={caption}`, o InstaVault gera um arquivo .txt legível que contém unicamente o texto da legenda redigido, pronto para análise semântica ou NLP.</p>
+                  <p className="text-sm text-on-surface-variant">Instruído pela flag `--post-metadata-txt={"{caption}"}`, o InstaVault gera um arquivo .txt legível que contém unicamente o texto da legenda redigido, pronto para análise semântica ou NLP.</p>
                </div>
             </div>
             <div className="p-4 bg-surface-container border border-outline-variant rounded-lg flex flex-col sm:flex-row sm:items-start gap-4">

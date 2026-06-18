@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Search, 
-  Loader2, 
-  AlertCircle, 
+import {
+  Search,
+  Loader2,
+  AlertCircle,
   ChevronRight,
   Terminal,
   FolderOpen
@@ -56,7 +56,7 @@ export default function Home() {
       }
 
       if (!res.body) {
-         throw new Error("Stream não suportada pelo navegador.");
+        throw new Error("Stream não suportada pelo navegador.");
       }
 
       const reader = res.body.getReader();
@@ -80,7 +80,7 @@ export default function Home() {
                   setLoading(false);
                 }
               } catch (e) {
-                 // ignore parse errors
+                // ignore parse errors
               }
             }
           }
@@ -169,12 +169,12 @@ export default function Home() {
                 )}
               </button>
             </div>
-            
+
             <div className="relative w-full flex items-center border-t border-zinc-800/30 pt-3">
               <FolderOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 mt-1.5" />
               <input
                 type="text"
-                placeholder="Caminho de Salvamento (Opcional, ex: C:\Acervo)"
+                placeholder="Caminho de Salvamento (Ex: C:\Acervo)"
                 value={targetDir}
                 onChange={(e) => setTargetDir(e.target.value)}
                 className="w-full bg-transparent pl-12 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm md:text-base"
@@ -204,7 +204,7 @@ export default function Home() {
             <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">Terminal Instaloader</span>
             {loading && <Loader2 className="w-4 h-4 text-indigo-400 animate-spin ml-auto" />}
           </div>
-          
+
           <div className="flex-1 bg-black/60 p-4 overflow-y-auto font-mono text-xs md:text-sm text-slate-300 space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
             {logs.length === 0 ? (
               <div className="text-slate-600 flex items-center h-full justify-center">
@@ -215,7 +215,7 @@ export default function Home() {
                 let logClass = "text-slate-300";
                 if (log.includes("[Erro]") || log.includes("[stderr]")) logClass = "text-red-400";
                 if (log.includes("[Sistema]")) logClass = "text-indigo-400 font-medium";
-                
+
                 return (
                   <div key={idx} className={`${logClass} break-all`}>
                     <span className="text-slate-600 mr-2 select-none">~</span>{log}

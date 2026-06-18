@@ -47,15 +47,15 @@ export async function POST(request: NextRequest) {
             args.push(`--count=${options.count}`);
           }
           
-          let filters = [];
-          if (options.minLikes && options.minLikes.trim() !== '') {
-            filters.push(`likes >= ${options.minLikes}`);
+          let filterConditions = [];
+          if (options.minLikes && options.minLikes.toString().trim() !== '' && Number(options.minLikes) > 0) {
+            filterConditions.push(`likes >= ${options.minLikes}`);
           }
-          if (options.minComments && options.minComments.trim() !== '') {
-            filters.push(`comments >= ${options.minComments}`);
+          if (options.minComments && options.minComments.toString().trim() !== '' && Number(options.minComments) > 0) {
+            filterConditions.push(`comments >= ${options.minComments}`);
           }
-          if (filters.length > 0) {
-            args.push(`--post-filter=${filters.join(' and ')}`);
+          if (filterConditions.length > 0) {
+            args.push(`--post-filter=${filterConditions.join(' and ')}`);
           }
 
           if (options.filenamePattern && options.filenamePattern.trim() !== '') {

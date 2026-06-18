@@ -5,10 +5,10 @@ import path from 'path';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { directory, keywords, sensitivity } = body;
+    const { source, destination, keywords, sensitivity } = body;
 
-    if (!directory) {
-      return new Response(JSON.stringify({ error: 'Directory is required' }), { status: 400 });
+    if (!source || !destination) {
+      return new Response(JSON.stringify({ error: 'Source and Destination are required' }), { status: 400 });
     }
 
     const encoder = new TextEncoder();
@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
         
         const args = [
           scriptPath,
-          '--dir', directory,
+          '--source', source,
+          '--destination', destination,
           '--sensitivity', (sensitivity || 0).toString()
         ];
         
@@ -27,7 +28,6 @@ export async function POST(req: NextRequest) {
           args.push('--keywords', keywords.trim());
         }
 
-        // Add PYTHONUNBUFFERED=1 to ensure Python stdout is flushed instantly
         const pythonProcess = spawn('python', args, {
           env: { ...process.env, PYTHONUNBUFFERED: '1' }
         });

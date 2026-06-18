@@ -39,8 +39,11 @@ export function Navbar() {
         
         <div className="flex items-center gap-6">
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/dashboard" className="text-[13px] font-mono text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest">
-              {t('nav.dashboard')}
+            <Link href="/extractor" className="text-[13px] font-mono text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest">
+              Extractor
+            </Link>
+            <Link href="/cleaner" className="text-[13px] font-mono text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest">
+              Cleaner
             </Link>
             <Link href="/docs" className="text-[13px] font-mono text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest">
               {t('nav.docs')}

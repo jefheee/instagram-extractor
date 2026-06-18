@@ -100,6 +100,28 @@ const dictionary: Dictionary = {
     'docs.files.txt.desc': 'Instruído pela flag `--post-metadata-txt={"{caption}"}`, o InstaVault gera um arquivo .txt legível que contém unicamente o texto da legenda redigido, pronto para análise semântica ou NLP.',
     'docs.files.json.title': 'Dump da Graph API do Instagram',
     'docs.files.json.desc': 'Um binário compactado via XZ contendo o payload inteiro da API privada do Instagram para a referida mídia. Útil para extrair timestamps absolutos, metadados de localização ou tags em nível de código.',
+    
+    // Cleaner
+    'cleaner.title': 'Archive Cleaner Copilot',
+    'cleaner.subtitle': 'Assistente IA para filtrar e organizar suas extrações. Descreva o que deseja remover e deixe a IA fazer o trabalho pesado.',
+    'cleaner.src': 'Pasta Original (Origem)',
+    'cleaner.srcPlaceholder': 'Ex: C:\\Users\\...\\Downloads\\Instagram',
+    'cleaner.srcTooltip': 'A pasta onde os arquivos originais estão. Nada será apagado daqui.',
+    'cleaner.dest': 'Onde Salvar os Resultados (Destino)',
+    'cleaner.destPlaceholder': 'Ex: C:\\Users\\...\\Downloads\\Filtrados',
+    'cleaner.destTooltip': 'Os arquivos serão COPIADOS para cá, separados em /Filtrados e /Descartados.',
+    'cleaner.prompt': 'O que deseja filtrar? (Linguagem Natural)',
+    'cleaner.promptPlaceholder': 'Ex: Remova avisos de feriado, reuniões de pais e comunicados...',
+    'cleaner.level': 'Nível de Limpeza (Sensibilidade Visual)',
+    'cleaner.levelTooltip': 'As imagens com muito texto serão separadas para não poluir as fotos. Suave: tolera mais texto. Agressivo: remove qualquer imagem com frases.',
+    'cleaner.level.soft': 'Suave',
+    'cleaner.level.standard': 'Padrão',
+    'cleaner.level.aggressive': 'Agressivo',
+    'cleaner.btn.generate': 'Gerar Regras',
+    'cleaner.btn.generating': 'Pensando...',
+    'cleaner.rules.title': 'Regras Geradas (Palavras-chave)',
+    'cleaner.btn.start': 'Iniciar Limpeza',
+    'cleaner.btn.running': 'Processando...',
   },
   en: {
     // Navbar
@@ -190,6 +212,28 @@ const dictionary: Dictionary = {
     'docs.files.txt.desc': 'Instructed by the `--post-metadata-txt={"{caption}"}` flag, InstaVault generates a readable .txt file containing solely the redacted caption text, ready for semantic analysis or NLP.',
     'docs.files.json.title': 'Instagram Graph API Dump',
     'docs.files.json.desc': 'An XZ-compressed binary containing the entire private Instagram API payload for the media. Useful for extracting absolute timestamps, location metadata, or code-level tags.',
+    
+    // Cleaner
+    'cleaner.title': 'Archive Cleaner Copilot',
+    'cleaner.subtitle': 'AI Assistant to filter and organize your extractions. Describe what to remove and let AI do the heavy lifting.',
+    'cleaner.src': 'Source Directory (Original)',
+    'cleaner.srcPlaceholder': 'Ex: C:\\Users\\...\\Downloads\\Instagram',
+    'cleaner.srcTooltip': 'The folder where original files are. Nothing will be deleted from here.',
+    'cleaner.dest': 'Destination Directory (Save here)',
+    'cleaner.destPlaceholder': 'Ex: C:\\Users\\...\\Downloads\\Filtered',
+    'cleaner.destTooltip': 'Files will be COPIED here, separated into /Filtered and /Discarded.',
+    'cleaner.prompt': 'What do you want to filter out? (Natural Language)',
+    'cleaner.promptPlaceholder': 'Ex: Remove holiday notices, parent meetings and announcements...',
+    'cleaner.level': 'Cleaning Level (Visual Sensitivity)',
+    'cleaner.levelTooltip': 'Images with heavy text will be separated so they don\'t clutter your photos. Soft: tolerates more text. Aggressive: removes any image with phrases.',
+    'cleaner.level.soft': 'Soft',
+    'cleaner.level.standard': 'Standard',
+    'cleaner.level.aggressive': 'Aggressive',
+    'cleaner.btn.generate': 'Generate Rules',
+    'cleaner.btn.generating': 'Thinking...',
+    'cleaner.rules.title': 'Generated Rules (Keywords)',
+    'cleaner.btn.start': 'Start Cleaning',
+    'cleaner.btn.running': 'Processing...',
   }
 };
 

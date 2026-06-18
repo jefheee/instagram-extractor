@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { url, type } = body;
+    const { url, type, targetDir } = body;
 
     if (!url) {
       return NextResponse.json({ error: 'URL ou @username é obrigatório.' }, { status: 400 });
@@ -27,11 +27,24 @@ export async function POST(request: NextRequest) {
 
         sendLog(`[Sistema] Iniciando extração para: ${target}`);
         
-        let args = ['--dirname-pattern=downloads/{profile}', target];
+        let finalDirPattern = targetDir && targetDir.trim() !== '' 
+          ? `${targetDir.trim()}/{profile}`.replace(/\\/g, '/') 
+          : 'downloads/{profile}';
+
+        let args: string[] = [];
         
-        if (process.env.INSTAGRAM_SESSION_ID) {
-           sendLog(`[Sistema] INSTAGRAM_SESSION_ID detectado. Utilizando fallback deslogado inicialmente. Se falhar, você deverá logar o instaloader via CLI.`);
+        if (process.env.IG_USERNAME) {
+           sendLog(`[Sistema] IG_USERNAME detectado. Iniciando sessão com: ${process.env.IG_USERNAME}`);
+           args.push(`--login=${process.env.IG_USERNAME}`);
+        } else {
+           sendLog(`[Sistema] Modo anônimo. Defina IG_USERNAME no .env para conteúdo restrito.`);
         }
+
+        args.push(`--dirname-pattern=${finalDirPattern}`);
+        args.push('--save-metadata');
+        args.push('--post-metadata-txt={caption}');
+        args.push('--no-video-thumbnails');
+        args.push(target);
 
         const child = spawn('instaloader', args);
 

@@ -6,7 +6,8 @@ import {
   Loader2, 
   AlertCircle, 
   ChevronRight,
-  Terminal
+  Terminal,
+  FolderOpen
 } from 'lucide-react';
 
 const InstagramIcon = ({ className }: { className?: string }) => (
@@ -28,6 +29,7 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 
 export default function Home() {
   const [url, setUrl] = useState('');
+  const [targetDir, setTargetDir] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
@@ -45,7 +47,7 @@ export default function Home() {
       const res = await fetch('/api/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, type: 'auto' }),
+        body: JSON.stringify({ url, type: 'auto', targetDir }),
       });
 
       if (!res.ok) {
@@ -133,38 +135,51 @@ export default function Home() {
         </div>
 
         <form onSubmit={handleSearch} className="w-full max-w-3xl mb-4">
-          <div className="glass-panel p-2 rounded-2xl shadow-2xl flex flex-col md:flex-row items-center gap-2">
-            <div className="relative w-full flex items-center">
-              <Search className="absolute left-4 w-5 h-5 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Insira a URL ou @username..."
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="w-full bg-transparent pl-12 pr-20 py-3.5 text-white placeholder-slate-500 focus:outline-none text-sm md:text-base"
-              />
+          <div className="glass-panel p-3 rounded-2xl shadow-2xl flex flex-col gap-3">
+            <div className="flex flex-col md:flex-row items-center gap-2">
+              <div className="relative w-full flex items-center">
+                <Search className="absolute left-4 w-5 h-5 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Insira a URL ou @username..."
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  className="w-full bg-transparent pl-12 pr-20 py-3.5 text-white placeholder-slate-500 focus:outline-none text-sm md:text-base border border-zinc-800/30 rounded-xl"
+                />
+                <button
+                  type="button"
+                  onClick={handlePaste}
+                  className="absolute right-3 px-2.5 py-1 text-xs text-indigo-400 font-medium hover:text-indigo-300 transition-colors bg-indigo-500/10 rounded-md border border-indigo-500/20"
+                >
+                  Colar
+                </button>
+              </div>
               <button
-                type="button"
-                onClick={handlePaste}
-                className="absolute right-3 px-2.5 py-1 text-xs text-indigo-400 font-medium hover:text-indigo-300 transition-colors bg-indigo-500/10 rounded-md border border-indigo-500/20"
+                type="submit"
+                disabled={loading || !url.trim()}
+                className="w-full md:w-auto bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-medium text-sm md:text-base px-8 py-3.5 rounded-xl shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
               >
-                Colar
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <span>Extrair</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </>
+                )}
               </button>
             </div>
-            <button
-              type="submit"
-              disabled={loading || !url.trim()}
-              className="w-full md:w-auto bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-medium text-sm md:text-base px-8 py-3.5 rounded-xl shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  <span>Extrair</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </>
-              )}
-            </button>
+            
+            <div className="relative w-full flex items-center border-t border-zinc-800/30 pt-3">
+              <FolderOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 mt-1.5" />
+              <input
+                type="text"
+                placeholder="Caminho de Salvamento (Opcional, ex: C:\Acervo)"
+                value={targetDir}
+                onChange={(e) => setTargetDir(e.target.value)}
+                className="w-full bg-transparent pl-12 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none text-sm md:text-base"
+              />
+            </div>
           </div>
         </form>
 

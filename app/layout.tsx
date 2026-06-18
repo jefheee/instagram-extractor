@@ -26,10 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${hanken.className} ${jetbrains.variable} antialiased h-screen w-screen overflow-hidden flex flex-col bg-background text-on-surface`}>
+      <body className={`${hanken.className} ${jetbrains.variable} antialiased min-h-screen bg-surface text-on-surface flex flex-col`}>
         <LanguageProvider>
           <Navbar />
-          <div className="flex-1 overflow-hidden relative">
+          <div className="flex-1 flex flex-col relative pt-16">
             {children}
           </div>
         </LanguageProvider>

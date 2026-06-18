@@ -7,8 +7,8 @@ export default function DocsPage() {
   const { t } = useLanguage();
 
   return (
-    <main className="flex-1 flex flex-col items-center p-6 md:p-10 overflow-y-auto terminal-scrollbar">
-      <div className="w-full max-w-[800px]">
+    <main className="max-w-7xl mx-auto py-10 px-4 sm:px-6 w-full flex-1">
+      <div className="w-full max-w-[800px] mx-auto">
         {/* Hero Section */}
         <header className="mb-10">
           <div className="inline-flex items-center px-2 py-1 bg-surface-container-high rounded-sm mb-4">

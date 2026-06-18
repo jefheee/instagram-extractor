@@ -2,9 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { 
-  Loader2, 
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -105,9 +103,9 @@ export default function Dashboard() {
   }, [logs]);
 
   return (
-    <div className="flex-1 grid grid-cols-12 gap-4 p-4 md:p-6 overflow-hidden h-full">
+    <div className="h-[calc(100vh-64px)] w-full overflow-hidden flex flex-col md:flex-row gap-4 p-4 md:p-6">
       {/* Left Column: Configuration */}
-      <section className="col-span-12 lg:col-span-5 xl:col-span-4 space-y-4 overflow-y-auto pr-2 pb-20 terminal-scrollbar">
+      <section className="w-full md:w-5/12 lg:w-4/12 h-full overflow-y-auto terminal-scrollbar pr-2 pb-10">
         <div className="bg-surface border border-outline-variant p-4 rounded-[4px] md:rounded-[8px]">
           <header className="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
             <div className="flex items-center gap-2">
@@ -160,7 +158,7 @@ export default function Dashboard() {
                   <button 
                     key={m.id}
                     onClick={() => setMode(m.id)}
-                    className={`flex items-center gap-2 px-4 py-2 font-mono text-[13px] font-bold rounded-[4px] transition-colors border ${mode === m.id ? 'bg-primary-container text-white border-primary-container' : 'bg-background border-outline-variant text-on-surface-variant hover:border-on-surface-variant'}`}
+                    className={`flex items-center justify-center gap-2 px-4 py-2 font-mono text-[13px] font-bold rounded-[4px] transition-colors border ${mode === m.id ? 'bg-primary-container text-white border-primary-container' : 'bg-background border-outline-variant text-on-surface-variant hover:border-on-surface-variant'}`}
                   >
                     {m.label}
                   </button>
@@ -217,12 +215,12 @@ export default function Dashboard() {
       </section>
 
       {/* Right Column: Terminal Simulation */}
-      <section className="col-span-12 lg:col-span-7 xl:col-span-8 flex flex-col h-full overflow-hidden">
+      <section className="w-full md:w-7/12 lg:w-8/12 h-full flex flex-col overflow-hidden">
         <div className="flex-1 bg-[#050505] border-t border-outline-variant relative overflow-hidden flex flex-col rounded-none">
           <div className="scanline"></div>
           
           {/* Terminal Header */}
-          <div className="flex items-center justify-between bg-surface-container-high px-4 py-2 border-b border-outline-variant">
+          <div className="flex items-center justify-between bg-surface-container-high px-4 py-2 border-b border-outline-variant shrink-0">
             <div className="flex items-center gap-2">
               <div className="flex gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full bg-error"></div>
@@ -249,7 +247,7 @@ export default function Dashboard() {
                     case 'data': colorClass = 'text-on-surface'; prefix = '[DATA]'; break;
                 }
                 return (
-                  <div key={idx} className={`mb-1 ${colorClass}`}>
+                  <div key={idx} className={`mb-1 ${colorClass} break-words`}>
                     <span className="opacity-40">{`[${new Date().toLocaleTimeString()}]`}</span> {prefix} {log.text}
                   </div>
                 )
@@ -259,7 +257,7 @@ export default function Dashboard() {
           </div>
 
           {/* Terminal Footer Stats */}
-          <div className="bg-surface px-4 py-1 border-t border-outline-variant flex justify-between items-center text-[10px] uppercase font-mono tracking-widest text-on-surface-variant opacity-60">
+          <div className="bg-surface px-4 py-1 border-t border-outline-variant flex justify-between items-center text-[10px] uppercase font-mono tracking-widest text-on-surface-variant opacity-60 shrink-0">
             <div className="flex gap-4">
               <span>Ln: {logs.length}, Col: 1</span>
               <span>UTF-8</span>

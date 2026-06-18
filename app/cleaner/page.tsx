@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, FormEvent } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { FolderSearch, Sparkles, Play, Terminal, HelpCircle, X, Plus } from 'lucide-react';
+import { Loader2, Sparkles, X, Plus } from 'lucide-react';
 
 interface LogEntry {
   status: string;
@@ -16,7 +16,7 @@ interface LogEntry {
   raw?: string;
 }
 
-export default function ArchiveCleanerPage() {
+export default function CleanerPage() {
   const { t } = useLanguage();
   
   const [sourceDir, setSourceDir] = useState('');
@@ -49,9 +49,9 @@ export default function ArchiveCleanerPage() {
       });
       const data = await res.json();
       if (data.keywords && Array.isArray(data.keywords)) {
-        // Merge with existing avoiding duplicates
         const merged = Array.from(new Set([...keywords, ...data.keywords]));
         setKeywords(merged);
+        setPrompt('');
       }
     } catch (e) {
       console.error(e);
@@ -105,25 +105,27 @@ export default function ArchiveCleanerPage() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n\n').filter(line => line.startsWith('data: '));
-        
-        for (const line of lines) {
-          const jsonStr = line.replace(/^data: /, '');
-          try {
-            const parsed: LogEntry = JSON.parse(jsonStr);
-            parsed.raw = jsonStr;
-            setLogs(prev => [...prev, parsed]);
-            
-            if (parsed.status === 'progress' && parsed.processed !== undefined && parsed.total !== undefined) {
-              setProgress({ processed: parsed.processed, total: parsed.total });
+      let done = false;
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n\n').filter(line => line.startsWith('data: '));
+          
+          for (const line of lines) {
+            const jsonStr = line.replace(/^data: /, '');
+            try {
+              const parsed: LogEntry = JSON.parse(jsonStr);
+              parsed.raw = jsonStr;
+              setLogs(prev => [...prev, parsed]);
+              
+              if (parsed.status === 'progress' && parsed.processed !== undefined && parsed.total !== undefined) {
+                setProgress({ processed: parsed.processed, total: parsed.total });
+              }
+            } catch (e) {
+              setLogs(prev => [...prev, { status: 'raw', message: jsonStr, raw: jsonStr }]);
             }
-          } catch (e) {
-            setLogs(prev => [...prev, { status: 'raw', message: jsonStr, raw: jsonStr }]);
           }
         }
       }
@@ -134,106 +136,89 @@ export default function ArchiveCleanerPage() {
     }
   };
 
-  const getLogColor = (status: string) => {
-    switch (status) {
-      case 'moved': return 'text-amber-500';
-      case 'kept': return 'text-emerald-500';
-      case 'error': case 'stderr': return 'text-red-500';
-      case 'warning': return 'text-yellow-500';
-      case 'done': return 'text-blue-500';
-      default: return 'text-zinc-300';
-    }
-  };
-
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6 pt-24">
-      <div className="flex items-center space-x-3 mb-8">
-        <div className="p-3 bg-zinc-800 rounded-lg">
-          <FolderSearch className="w-6 h-6 text-emerald-400" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-white">{t('cleaner.title')}</h1>
-          <p className="text-zinc-400">{t('cleaner.subtitle')}</p>
-        </div>
-      </div>
+    <div className="h-[calc(100vh-64px)] mt-16 w-full overflow-hidden flex flex-col md:flex-row gap-4 p-4 md:p-6 bg-[#0a0a0a]">
+      
+      {/* Configurações (Esquerda) */}
+      <section className="w-full md:w-5/12 lg:w-4/12 h-full overflow-y-auto terminal-scrollbar pr-2 pb-10">
+        <div className="bg-surface border border-outline-variant p-4 rounded-[4px] md:rounded-[8px] relative overflow-hidden backdrop-blur-md">
+          <header className="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-primary rounded-full animate-pulse"></span>
+              <h2 className="text-[11px] font-mono uppercase tracking-widest text-on-surface">Copilot Configuration</h2>
+            </div>
+          </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chat / Configuration Panel */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-6 shadow-xl flex flex-col">
-          
-          <div className="space-y-4">
-            <div>
-              <label className="flex items-center text-sm font-medium text-zinc-300 mb-1.5 group">
-                {t('cleaner.src')}
-                <div className="ml-2 text-zinc-500 hover:text-zinc-300 cursor-help relative">
-                  <HelpCircle className="w-4 h-4" />
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-64 bg-zinc-800 text-xs text-zinc-200 p-2 rounded shadow-lg z-10 text-center">
-                    {t('cleaner.srcTooltip')}
-                  </div>
+          <div className="space-y-5">
+            {/* Source & Destination */}
+            <div className="space-y-4">
+              <div className="space-y-1 group">
+                <label className="text-[11px] font-mono text-on-surface-variant flex items-center justify-between">
+                  {t('cleaner.src')}
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-black/80 px-2 py-0.5 rounded text-white">{t('cleaner.srcTooltip')}</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-mono">/</span>
+                  <input 
+                    className="w-full pl-8 pr-4 py-2 bg-background border border-outline-variant focus:border-primary outline-none font-mono text-[13px] text-on-surface transition-all rounded-[4px]" 
+                    placeholder={t('cleaner.srcPlaceholder')} 
+                    type="text"
+                    value={sourceDir}
+                    onChange={(e) => setSourceDir(e.target.value)}
+                    disabled={isRunning}
+                  />
                 </div>
-              </label>
-              <input
-                type="text"
-                value={sourceDir}
-                onChange={(e) => setSourceDir(e.target.value)}
-                placeholder={t('cleaner.srcPlaceholder')}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                disabled={isRunning}
-              />
+              </div>
+
+              <div className="space-y-1 group">
+                <label className="text-[11px] font-mono text-on-surface-variant flex items-center justify-between">
+                  {t('cleaner.dest')}
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-black/80 px-2 py-0.5 rounded text-white">{t('cleaner.destTooltip')}</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-mono">/</span>
+                  <input 
+                    className="w-full pl-8 pr-4 py-2 bg-background border border-outline-variant focus:border-primary outline-none font-mono text-[13px] text-on-surface transition-all rounded-[4px]" 
+                    placeholder={t('cleaner.destPlaceholder')} 
+                    type="text"
+                    value={destDir}
+                    onChange={(e) => setDestDir(e.target.value)}
+                    disabled={isRunning}
+                  />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="flex items-center text-sm font-medium text-zinc-300 mb-1.5 group">
-                {t('cleaner.dest')}
-                <div className="ml-2 text-zinc-500 hover:text-zinc-300 cursor-help relative">
-                  <HelpCircle className="w-4 h-4" />
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-64 bg-zinc-800 text-xs text-zinc-200 p-2 rounded shadow-lg z-10 text-center">
-                    {t('cleaner.destTooltip')}
-                  </div>
-                </div>
-              </label>
-              <input
-                type="text"
-                value={destDir}
-                onChange={(e) => setDestDir(e.target.value)}
-                placeholder={t('cleaner.destPlaceholder')}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                disabled={isRunning}
-              />
-            </div>
-            
-            <div className="pt-2 border-t border-zinc-800">
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-                {t('cleaner.prompt')}
-              </label>
-              <div className="relative">
+            {/* AI Prompt Area */}
+            <div className="pt-4 border-t border-outline-variant">
+              <label className="text-[11px] font-mono text-on-surface-variant block mb-2">{t('cleaner.prompt')}</label>
+              <div className="relative group">
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder={t('cleaner.promptPlaceholder')}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-4 pr-12 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 h-24 resize-none"
+                  className="w-full bg-background border border-outline-variant rounded-[4px] pl-3 pr-12 py-3 text-on-surface font-mono text-[12px] placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary transition-colors resize-none h-20"
                   disabled={isRunning || isGenerating}
                 />
                 <button
                   onClick={handleGenerateRules}
                   disabled={!prompt || isRunning || isGenerating}
-                  className="absolute right-3 bottom-3 p-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-md transition-colors disabled:opacity-50"
+                  className="absolute right-2 bottom-2 p-1.5 bg-primary-container/20 text-primary hover:bg-primary-container disabled:opacity-50 disabled:hover:bg-primary-container/20 rounded-[4px] transition-colors"
                   title={t('cleaner.btn.generate')}
                 >
-                  <Sparkles className="w-4 h-4" />
+                  {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            <div className="bg-zinc-950 p-4 rounded-lg border border-zinc-800/50">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-zinc-300">{t('cleaner.rules.title')}</span>
-              </div>
-              <div className="flex flex-wrap gap-2 mb-3">
+            {/* Keywords */}
+            <div className="bg-background/50 p-3 rounded-[4px] border border-outline-variant">
+              <div className="text-[11px] font-mono text-on-surface-variant mb-3">{t('cleaner.rules.title')}</div>
+              <div className="flex flex-wrap gap-1.5 mb-3">
                 {keywords.map(kw => (
-                  <span key={kw} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-800 text-xs text-zinc-300">
+                  <span key={kw} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-primary-container text-[11px] font-mono text-on-primary-container">
                     {kw}
-                    <button onClick={() => removeKeyword(kw)} className="text-zinc-500 hover:text-zinc-200" disabled={isRunning}>
+                    <button onClick={() => removeKeyword(kw)} className="hover:text-white transition-colors" disabled={isRunning}>
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -244,132 +229,145 @@ export default function ArchiveCleanerPage() {
                   type="text"
                   value={newKeyword}
                   onChange={(e) => setNewKeyword(e.target.value)}
-                  placeholder="Adicionar tag..."
-                  className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-3 py-1.5 text-xs text-zinc-200 focus:outline-none"
+                  placeholder="Tag manual..."
+                  className="flex-1 bg-background border border-outline-variant rounded-[4px] px-2 py-1.5 font-mono text-[11px] text-on-surface focus:outline-none focus:border-primary transition-colors"
                   disabled={isRunning}
                 />
-                <button type="submit" disabled={!newKeyword || isRunning} className="px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded text-xs hover:bg-zinc-700 disabled:opacity-50">
+                <button type="submit" disabled={!newKeyword || isRunning} className="px-2 py-1.5 bg-surface-container-high text-on-surface-variant rounded-[4px] hover:text-primary transition-colors disabled:opacity-50">
                   <Plus className="w-3 h-3" />
                 </button>
               </form>
             </div>
 
+            {/* Level Selection */}
             <div className="pt-2">
-              <label className="flex items-center text-sm font-medium text-zinc-300 mb-2 group">
+              <label className="text-[11px] font-mono text-on-surface-variant flex items-center justify-between mb-3 group">
                 {t('cleaner.level')}
-                <div className="ml-2 text-zinc-500 hover:text-zinc-300 cursor-help relative">
-                  <HelpCircle className="w-4 h-4" />
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-64 bg-zinc-800 text-xs text-zinc-200 p-2 rounded shadow-lg z-10 text-center">
-                    {t('cleaner.levelTooltip')}
-                  </div>
-                </div>
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-black/80 px-2 py-0.5 rounded text-white">{t('cleaner.levelTooltip')}</span>
               </label>
-              <div className="flex items-center gap-4">
+              <div className="grid grid-cols-3 gap-2">
                 {['soft', 'standard', 'aggressive'].map(lvl => (
-                  <label key={lvl} className={`flex items-center gap-2 cursor-pointer ${isRunning ? 'opacity-50' : ''}`}>
-                    <input
-                      type="radio"
-                      name="level"
-                      value={lvl}
-                      checked={level === lvl}
-                      onChange={(e) => setLevel(e.target.value)}
-                      disabled={isRunning}
-                      className="text-emerald-500 focus:ring-emerald-500/50 bg-zinc-900 border-zinc-700"
-                    />
-                    <span className="text-sm text-zinc-400 capitalize">{t(`cleaner.level.${lvl}`)}</span>
-                  </label>
+                  <button 
+                    key={lvl}
+                    onClick={() => setLevel(lvl)}
+                    disabled={isRunning}
+                    className={`flex items-center justify-center gap-1 px-2 py-2 font-mono text-[11px] rounded-[4px] transition-colors border ${level === lvl ? 'bg-primary-container text-white border-primary-container' : 'bg-background border-outline-variant text-on-surface-variant hover:border-on-surface-variant disabled:opacity-50'}`}
+                  >
+                    {t(`cleaner.level.${lvl}`)}
+                  </button>
                 ))}
               </div>
             </div>
-          </div>
 
-          <div className="mt-auto pt-6">
-            <button
-              onClick={startCleaning}
-              disabled={!sourceDir || !destDir || isRunning}
-              className="w-full flex items-center justify-center space-x-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-zinc-800 disabled:text-zinc-500 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-lg shadow-emerald-500/20"
-            >
-              {isRunning ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-zinc-500 border-t-emerald-500 rounded-full animate-spin" />
-                  <span>{t('cleaner.btn.running')}</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-5 h-5" />
-                  <span>{t('cleaner.btn.start')}</span>
-                </>
-              )}
-            </button>
+            {/* Start Button */}
+            <div className="pt-4 border-t border-outline-variant mt-4">
+              <button 
+                onClick={startCleaning}
+                disabled={!sourceDir || !destDir || isRunning}
+                className="w-full bg-primary-container disabled:opacity-50 hover:bg-opacity-90 active:scale-[0.98] transition-all text-white py-4 text-lg font-bold flex items-center justify-center gap-4 rounded-[4px]"
+              >
+                {isRunning ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{t('cleaner.btn.start')}</span>}
+              </button>
+            </div>
+            
           </div>
         </div>
+      </section>
 
-        {/* Terminal output */}
-        <div className="bg-[#0c0c0c] border border-zinc-800 rounded-xl overflow-hidden flex flex-col h-[600px] shadow-2xl relative">
-          <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-3 flex items-center justify-between z-10">
-            <div className="flex items-center space-x-2">
-              <Terminal className="w-4 h-4 text-zinc-400" />
-              <span className="text-sm font-medium text-zinc-300">Live Execution Log</span>
+      {/* Console (Direita) */}
+      <section className="w-full md:w-7/12 lg:w-8/12 h-full flex flex-col overflow-hidden">
+        <div className="flex-1 bg-[#050505] border border-outline-variant relative overflow-hidden flex flex-col rounded-[4px] md:rounded-[8px]">
+          <div className="scanline"></div>
+          
+          <div className="flex items-center justify-between bg-surface-container-high px-4 py-2 border-b border-outline-variant shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-error"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-secondary"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
+              </div>
+              <span className="ml-2 font-mono text-[13px] text-on-surface-variant opacity-80">bash — cleaner-worker — 120x40</span>
             </div>
-            {progress.total > 0 && (
-              <div className="flex items-center space-x-3">
-                <div className="w-32 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            {isRunning && <Loader2 className="w-3 h-3 text-primary animate-spin" />}
+          </div>
+
+          {/* Progress Bar Header */}
+          {progress.total > 0 && (
+            <div className="bg-[#050505] border-b border-outline-variant px-4 py-1.5 flex items-center gap-4 shrink-0">
+               <div className="text-[10px] font-mono text-on-surface-variant">Progress</div>
+               <div className="flex-1 h-1 bg-surface rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-emerald-500 transition-all duration-300"
+                    className="h-full bg-primary transition-all duration-300"
                     style={{ width: `${(progress.processed / progress.total) * 100}%` }}
                   />
-                </div>
-                <span className="text-xs font-mono text-zinc-400">
-                  {progress.processed}/{progress.total}
-                </span>
-              </div>
-            )}
-          </div>
+               </div>
+               <div className="text-[10px] font-mono text-on-surface-variant w-12 text-right">
+                 {Math.round((progress.processed / progress.total) * 100)}%
+               </div>
+            </div>
+          )}
           
-          <div className="flex-1 overflow-y-auto p-4 font-mono text-[13px] leading-relaxed">
-            {logs.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-zinc-600 space-y-3">
-                <Terminal className="w-8 h-8 opacity-20" />
-                <span className="italic">Logs will stream here in real-time...</span>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {logs.map((log, i) => (
-                  <div key={i} className={`break-words ${getLogColor(log.status)} group`}>
-                    <span className="text-zinc-600/50 mr-3 select-none">
-                      [{new Date().toLocaleTimeString([], { hour12: false })}]
-                    </span>
-                    {log.status === 'moved' ? (
-                      <span>
-                        <span className="font-semibold">[DISCARDED]</span> {log.folder} <span className="text-zinc-500 opacity-70">({log.reason})</span>
-                      </span>
-                    ) : log.status === 'kept' ? (
-                      <span><span className="font-semibold">[FILTERED]</span>  {log.folder}</span>
-                    ) : log.status === 'error' || log.status === 'stderr' ? (
-                      <span><span className="font-semibold">[ERROR]</span> {log.message}</span>
-                    ) : log.status === 'warning' ? (
-                      <span><span className="font-semibold">[WARN]</span> {log.message}</span>
-                    ) : log.status === 'info' ? (
-                      <span className="text-blue-400"><span className="font-semibold">[INFO]</span> {log.message}</span>
-                    ) : log.status === 'start' ? (
-                      <span className="text-blue-400"><span className="font-semibold">[START]</span> Found {log.total} folders to process.</span>
-                    ) : log.status === 'done' ? (
-                      <span className="block mt-4 text-emerald-400 font-semibold border-t border-zinc-800/50 pt-2">
-                        ✨ Finished! Processed {log.total} folders. Discarded {log.discarded}.
-                      </span>
-                    ) : log.status === 'progress' ? (
-                      null
-                    ) : (
-                      <span className="opacity-80">{log.raw}</span>
-                    )}
-                  </div>
-                ))}
-                <div ref={logsEndRef} className="h-4" />
-              </div>
-            )}
+          <div className="flex-1 p-4 font-mono text-[13px] overflow-y-auto terminal-scrollbar selection:bg-primary-container selection:text-white pb-10">
+             {logs.length === 0 && !isRunning && (
+               <div className="text-on-tertiary-container mb-1">[SYSTEM] Ready for cleanup. Configure parameters and click start.</div>
+             )}
+             <div className="space-y-1">
+               {logs.map((log, i) => {
+                 let colorClass = 'text-on-surface-variant';
+                 let prefix = '';
+                 let message = log.message || log.raw || '';
+
+                 if (log.status === 'moved') {
+                   colorClass = 'text-warning'; 
+                   prefix = '[DISCARDED]';
+                   message = `${log.folder} -> Reason: ${log.reason}`;
+                 } else if (log.status === 'kept') {
+                   colorClass = 'text-green-400';
+                   prefix = '[FILTERED]';
+                   message = log.folder || '';
+                 } else if (log.status === 'error' || log.status === 'stderr') {
+                   colorClass = 'text-error';
+                   prefix = '[ERROR]';
+                 } else if (log.status === 'warning') {
+                   colorClass = 'text-secondary';
+                   prefix = '[WARN]';
+                 } else if (log.status === 'info') {
+                   colorClass = 'text-primary';
+                   prefix = '[INFO]';
+                 } else if (log.status === 'start') {
+                   colorClass = 'text-primary';
+                   prefix = '[START]';
+                   message = `Found ${log.total} folders to process.`;
+                 } else if (log.status === 'done') {
+                   colorClass = 'text-green-400';
+                   prefix = '[DONE]';
+                   message = `Finished! Processed ${log.total}. Discarded: ${log.discarded}.`;
+                 } else if (log.status === 'progress') {
+                   return null; // hide progress from log lines
+                 }
+
+                 return (
+                   <div key={i} className={`mb-1 ${colorClass} break-words`}>
+                     <span className="opacity-40">{`[${new Date().toLocaleTimeString([], {hour12: false})}]`}</span> {prefix} {message}
+                   </div>
+                 )
+               })}
+             </div>
+            {isRunning && <div className="inline-block w-2 h-4 bg-primary animate-pulse ml-1 mt-1"></div>}
+            <div ref={logsEndRef} />
+          </div>
+
+          <div className="bg-surface px-4 py-1 border-t border-outline-variant flex justify-between items-center text-[10px] uppercase font-mono tracking-widest text-on-surface-variant opacity-60 shrink-0">
+            <div className="flex gap-4">
+              <span>Ln: {logs.filter(l => l.status !== 'progress').length}, Col: 1</span>
+              <span>UTF-8</span>
+            </div>
+            <div className="flex gap-4">
+              <span>Status: {isRunning ? 'ACTIVE' : 'IDLE'}</span>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

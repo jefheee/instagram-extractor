@@ -43,6 +43,25 @@ export async function POST(request: NextRequest) {
         args.push(`--dirname-pattern=${finalDirPattern}`);
         
         if (options) {
+          if (options.count && options.count.trim() !== '') {
+            args.push(`--count=${options.count}`);
+          }
+          
+          let filters = [];
+          if (options.minLikes && options.minLikes.trim() !== '') {
+            filters.push(`likes >= ${options.minLikes}`);
+          }
+          if (options.minComments && options.minComments.trim() !== '') {
+            filters.push(`comments >= ${options.minComments}`);
+          }
+          if (filters.length > 0) {
+            args.push(`--post-filter=${filters.join(' and ')}`);
+          }
+
+          if (options.filenamePattern && options.filenamePattern.trim() !== '') {
+            args.push(`--filename-pattern=${options.filenamePattern}`);
+          }
+
           if (options.noVideos) args.push('--no-videos');
           
           if (options.noCaptions) {
@@ -68,7 +87,15 @@ export async function POST(request: NextRequest) {
         }
 
         args.push('--no-video-thumbnails');
-        args.push(target);
+        
+        if (options && options.saved) {
+           args.push(':saved');
+        } else if (options && options.tagged) {
+           args.push(target);
+           args.push(':tagged');
+        } else {
+           args.push(target);
+        }
 
         const child = spawn('python', ['-m', 'instaloader', ...args]);
 

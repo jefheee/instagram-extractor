@@ -40,7 +40,13 @@ export default function Home() {
     stories: false,
     highlights: false,
     comments: false,
-    fastUpdate: false
+    fastUpdate: false,
+    tagged: false,
+    saved: false,
+    count: '',
+    minLikes: '',
+    minComments: '',
+    filenamePattern: '{date_utc}_UTC'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +54,11 @@ export default function Home() {
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   const toggleOption = (key: keyof typeof options) => {
-    setOptions(prev => ({ ...prev, [key]: !prev[key] }));
+    setOptions(prev => ({ ...prev, [key]: typeof prev[key] === 'boolean' ? !prev[key] : prev[key] }));
+  };
+
+  const handleOptionChange = (key: keyof typeof options, value: string) => {
+    setOptions(prev => ({ ...prev, [key]: value }));
   };
 
   const handleSearch = async (e?: React.FormEvent) => {
@@ -208,28 +218,90 @@ export default function Home() {
             </button>
 
             {showOptions && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6 mt-1 p-4 bg-zinc-950/40 rounded-xl border border-zinc-800/40">
-                {[
-                  { key: 'noVideos', label: 'Ignorar Vídeos (Apenas Imagens)' },
-                  { key: 'noCaptions', label: 'Ignorar Legendas (.txt)' },
-                  { key: 'noMetadata', label: 'Ignorar Metadados (.json)' },
-                  { key: 'noProfilePic', label: 'Ignorar Foto de Perfil' },
-                  { key: 'stories', label: 'Baixar Stories' },
-                  { key: 'highlights', label: 'Baixar Destaques' },
-                  { key: 'comments', label: 'Baixar Comentários' },
-                  { key: 'fastUpdate', label: 'Atualização Rápida (Pular existentes)' }
-                ].map(({ key, label }) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-300">{label}</span>
-                    <button
-                      type="button"
-                      onClick={() => toggleOption(key as keyof typeof options)}
-                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${options[key as keyof typeof options] ? 'bg-indigo-500' : 'bg-zinc-700'}`}
-                    >
-                      <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${options[key as keyof typeof options] ? 'translate-x-4' : 'translate-x-0'}`} />
-                    </button>
+              <div className="flex flex-col gap-6 mt-3 p-4 md:p-6 bg-zinc-950/40 rounded-xl border border-zinc-800/40">
+                {/* A) Filtros e Limites de Volume */}
+                <div>
+                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3">Filtros e Volume</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs text-slate-400">Limite de Posts (--count)</label>
+                      <input 
+                        type="number" 
+                        placeholder="Ex: 50" 
+                        value={options.count} 
+                        onChange={(e) => handleOptionChange('count', e.target.value)}
+                        className="w-full bg-zinc-900 px-3 py-2 text-white text-sm focus:outline-none border border-zinc-800 rounded-lg"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs text-slate-400">Mínimo de Curtidas</label>
+                      <input 
+                        type="number" 
+                        placeholder="Ex: 100" 
+                        value={options.minLikes} 
+                        onChange={(e) => handleOptionChange('minLikes', e.target.value)}
+                        className="w-full bg-zinc-900 px-3 py-2 text-white text-sm focus:outline-none border border-zinc-800 rounded-lg"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs text-slate-400">Mínimo de Comentários</label>
+                      <input 
+                        type="number" 
+                        placeholder="Ex: 10" 
+                        value={options.minComments} 
+                        onChange={(e) => handleOptionChange('minComments', e.target.value)}
+                        className="w-full bg-zinc-900 px-3 py-2 text-white text-sm focus:outline-none border border-zinc-800 rounded-lg"
+                      />
+                    </div>
                   </div>
-                ))}
+                </div>
+
+                {/* B) Escopo e Alvos Especiais */}
+                <div>
+                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3">Escopo e Comportamento</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
+                    {[
+                      { key: 'noVideos', label: 'Ignorar Vídeos (Apenas Imagens)' },
+                      { key: 'noCaptions', label: 'Ignorar Legendas (.txt)' },
+                      { key: 'noMetadata', label: 'Ignorar Metadados (.json)' },
+                      { key: 'noProfilePic', label: 'Ignorar Foto de Perfil' },
+                      { key: 'stories', label: 'Baixar Stories' },
+                      { key: 'highlights', label: 'Baixar Destaques' },
+                      { key: 'comments', label: 'Baixar Comentários' },
+                      { key: 'fastUpdate', label: 'Atualização Rápida (Pular existentes)' },
+                      { key: 'tagged', label: 'Baixar Posts Marcados (Tagged)' },
+                      { key: 'saved', label: 'Baixar Posts Salvos (Requer login)' }
+                    ].map(({ key, label }) => (
+                      <div key={key} className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-slate-300">{label}</span>
+                        <button
+                          type="button"
+                          onClick={() => toggleOption(key as keyof typeof options)}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${options[key as keyof typeof options] ? 'bg-indigo-500' : 'bg-zinc-700'}`}
+                        >
+                          <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${options[key as keyof typeof options] ? 'translate-x-4' : 'translate-x-0'}`} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* C) Customização de Arquivos */}
+                <div>
+                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3">Customização de Arquivos</h4>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs text-slate-400">Padrão de Nome de Arquivo (--filename-pattern)</label>
+                    <select 
+                      value={options.filenamePattern}
+                      onChange={(e) => handleOptionChange('filenamePattern', e.target.value)}
+                      className="w-full bg-zinc-900 px-3 py-2.5 text-white text-sm focus:outline-none border border-zinc-800 rounded-lg"
+                    >
+                      <option value="{date_utc}_UTC">Padrão (Data e Hora UTC)</option>
+                      <option value="{shortcode}_{profile}">ID do Post + Usuário</option>
+                      <option value="{date_utc}_UTC_{shortcode}">Cronológico Completo</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             )}
           </div>

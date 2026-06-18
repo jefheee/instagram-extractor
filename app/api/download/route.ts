@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spawn } from 'child_process';
+import fs from 'fs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,6 +46,17 @@ export async function POST(request: NextRequest) {
 
         sendLog(`[Sistema] Modo Ativo: ${mode.toUpperCase()} | Alvo Identificado: ${mode === 'saved' ? ':saved' : (isShortcode ? shortcode : target)}`);
         
+        if (targetDir && targetDir.trim() !== '') {
+          try {
+            if (!fs.existsSync(targetDir.trim())) {
+              fs.mkdirSync(targetDir.trim(), { recursive: true });
+              sendLog(`[Sistema] Diretório criado: ${targetDir.trim()}`);
+            }
+          } catch (err: any) {
+            sendLog(`[Erro] Falha ao criar diretório ${targetDir}: ${err.message}`);
+          }
+        }
+
         let finalDirPattern = targetDir && targetDir.trim() !== '' 
           ? `${targetDir.trim()}/{profile}`.replace(/\\/g, '/') 
           : 'downloads/{profile}';
@@ -89,6 +101,8 @@ export async function POST(request: NextRequest) {
           if (options.noProfilePic) args.push('--no-profile-pic');
           if (options.comments) args.push('--comments');
           if (options.fastUpdate) args.push('--fast-update');
+          if (options.stories) args.push('--stories');
+          if (options.highlights) args.push('--highlights');
           
           if (!options.noCaptions) {
             args.push('--post-metadata-txt={caption}');
@@ -100,7 +114,7 @@ export async function POST(request: NextRequest) {
         args.push('--no-video-thumbnails');
         
         // 2. Mode and Target execution setup
-        if (mode === 'saved') {
+        if (mode === 'saved' || options?.saved) {
            args.push(':saved');
         } else if (mode === 'stories') {
            args.push('--stories');

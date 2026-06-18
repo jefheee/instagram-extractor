@@ -7,29 +7,23 @@ import { useLanguage } from './context/LanguageContext';
 export default function LandingPage() {
   const { t } = useLanguage();
   const [mockLogs, setMockLogs] = useState<string[]>([]);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   
   const simulationLogs = [
-    '[Sistema] Initializing InstaVault Environment...',
-    '[Sistema] Load configuration: config.json (Success)',
-    '[Sistema] Proxy rotation service: ONLINE (142 endpoints)',
-    '[stdout] Estabelecendo conexão segura com endpoint...',
-    '[stdout] Handshake SSL completo.',
-    '[success] Autenticação bem-sucedida: @instavault_agent_01',
-    '[stdout] Iniciando varredura no alvo...',
-    '[data] -> Buscando metadados do perfil: 100%',
-    '[data] -> Extraindo lista de posts (Modo: Post/Reel)',
-    '[success] ✓ Post extraído: ID 92837412 (Media Type: Image)',
-    '[stdout] 2026-06-13_01.jpg',
-    '[success] ✓ Post extraído: ID 92837415 (Media Type: Video)',
-    '[stdout] 2026-06-13_02.mp4',
-    '[error] ✖ Erro no download do item 92837418: Tentando novamente (1/3)...',
-    '[success] ✓ Post extraído: ID 92837418 (Recuperado)',
-    '[data] -> Progresso: [||||||||||          ] 50%'
+    '[stdout] Loaded session from C:\\Users\\https.jefhe\\AppData\\Local\\Instaloader\\session-https.jefhe.',
+    '[stdout] Logged in as https.jefhe.',
+    '[stdout] Stored ID 44738409825 for profile escolabenonivio.',
+    '[stdout] [1299/1343] downloads/escolabenonivio\\2026-06-13_01-32-21_UTC_DZgftBHKXil.jpg',
+    '[stdout] [1300/1343] downloads/escolabenonivio\\2026-06-13_01-32-21_UTC_DZgftBHKXil.txt'
   ];
 
   useEffect(() => {
     let index = 0;
+    let isResetting = false;
+
     const interval = setInterval(() => {
+      if (isResetting) return;
+
       if (index < simulationLogs.length) {
         setMockLogs(prev => {
            const newLogs = [...prev, simulationLogs[index]];
@@ -37,10 +31,17 @@ export default function LandingPage() {
         });
         index++;
       } else {
-        index = 0; 
-        setMockLogs([]);
+        isResetting = true;
+        setIsFadingOut(true);
+        setTimeout(() => {
+          setMockLogs([]);
+          setIsFadingOut(false);
+          index = 0;
+          isResetting = false;
+        }, 1000); // 1 second fade out before restart
       }
-    }, 400);
+    }, 600); // realistic typing cadence
+
     return () => clearInterval(interval);
   }, []);
 
@@ -87,10 +88,10 @@ export default function LandingPage() {
               </div>
               <div className="ml-6 px-4 py-1 bg-surface-container-high rounded text-xs text-on-surface-variant font-mono">instavault.cli --scrapers.init</div>
             </div>
-            <div className="relative overflow-hidden h-[300px] md:h-[400px] bg-[#050505] p-4 font-mono text-[13px] text-left">
+            <div className={`relative overflow-hidden h-[300px] md:h-[400px] bg-[#050505] p-4 font-mono text-[13px] text-left transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
                <div className="scanline"></div>
                {mockLogs.filter(Boolean).map((log, i) => (
-                 <div key={i} className={`mb-1 ${log.includes('✓') || log.includes('[success]') ? 'text-green-400' : log.includes('✖') || log.includes('[error]') ? 'text-error' : log.includes('[Sistema]') ? 'text-primary' : 'text-on-surface-variant'}`}>
+                 <div key={i} className={`mb-1 ${log.includes('✓') || log.includes('[success]') ? 'text-green-400' : log.includes('✖') || log.includes('[error]') ? 'text-error' : log.includes('[Sistema]') ? 'text-primary' : 'text-on-surface-variant'} animate-fade-in-up`}>
                    <span className="opacity-40">[{new Date().toLocaleTimeString()}]</span> {log.replace(/\[.*?\]/, '')}
                  </div>
                ))}
@@ -101,7 +102,7 @@ export default function LandingPage() {
       </section>
 
       {/* Feature Cards */}
-      <section className="py-20 px-gutter max-w-7xl mx-auto">
+      <section className="py-20 px-gutter max-w-7xl mx-auto border-b border-outline-variant">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="glass-panel p-8 rounded-xl glow-hover transition-all group flex flex-col h-full">
             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors text-primary text-2xl font-bold font-mono">
@@ -129,6 +130,20 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Credits Footer */}
+      <footer className="py-10 text-center">
+         <p className="text-on-surface-variant text-sm font-mono mb-4 uppercase tracking-widest">{t('landing.credits')}</p>
+         <div className="flex items-center justify-center gap-6">
+           <a href="https://github.com/instaloader/instaloader" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary-container transition-colors font-mono text-[13px] underline underline-offset-4">
+             Instaloader Core
+           </a>
+           <span className="text-outline-variant">•</span>
+           <a href="https://instaloader.github.io/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary-container transition-colors font-mono text-[13px] underline underline-offset-4">
+             Documentação Oficial
+           </a>
+         </div>
+      </footer>
     </main>
   );
 }

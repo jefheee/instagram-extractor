@@ -8,7 +8,7 @@ export default function Dashboard() {
   const { t } = useLanguage();
   
   const [url, setUrl] = useState('');
-  const [targetDir, setTargetDir] = useState('/mnt/vault/extraction/temp');
+  const [targetDir, setTargetDir] = useState('C:\\Users\\https.jefhe\\Documents\\Benonivio Posts');
   const [mode, setMode] = useState('profile');
   
   const [options, setOptions] = useState({
@@ -16,13 +16,15 @@ export default function Dashboard() {
     noCaptions: false,
     noMetadata: false,
     noProfilePic: false,
-    tagged: false,
+    stories: false,
+    highlights: false,
     comments: false,
     fastUpdate: false,
-    forceAnonymous: false,
-    count: '100',
-    minLikes: '500',
-    minComments: '20',
+    tagged: false,
+    saved: false,
+    count: '',
+    minLikes: '',
+    minComments: '',
     filenamePattern: '{date_utc}_UTC'
   });
 
@@ -31,12 +33,12 @@ export default function Dashboard() {
   const [logs, setLogs] = useState<{type: string, text: string}[]>([]);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
-  const handleOptionChange = (key: keyof typeof options, value: string) => {
+  const handleOptionChange = (key: keyof typeof options, value: any) => {
     setOptions(prev => ({ ...prev, [key]: value }));
   };
 
   const handleSearch = async () => {
-    if (!url.trim() && mode !== 'saved') return;
+    if (!url.trim() && mode !== 'saved' && !options.saved) return;
 
     setLoading(true);
     setError(null);
@@ -122,11 +124,11 @@ export default function Dashboard() {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">@</span>
                 <input 
                   className="w-full pl-8 pr-4 py-2 bg-background border border-outline-variant focus:border-primary-container outline-none font-mono text-[13px] text-on-surface transition-all rounded-[4px]" 
-                  placeholder={mode === 'saved' ? t('dash.target.saved') : "username ou URL"} 
+                  placeholder={mode === 'saved' || options.saved ? t('dash.target.saved') : "username ou URL"} 
                   type="text"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  disabled={mode === 'saved'}
+                  disabled={mode === 'saved' || options.saved}
                 />
               </div>
             </div>
@@ -166,36 +168,91 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Filtros Avançados */}
+            {/* Chaves Booleanas Avançadas */}
             <div className="pt-4 border-t border-outline-variant mt-4">
-              <label className="text-[11px] font-mono text-on-surface-variant block mb-4">Filtros Avançados</label>
+              <label className="text-[11px] font-mono text-on-surface-variant block mb-4">Parâmetros Booleanos</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { key: 'noVideos', label: 'Ignorar Vídeos' },
+                  { key: 'noCaptions', label: 'Ignorar Legendas' },
+                  { key: 'noMetadata', label: 'Ignorar Metadados' },
+                  { key: 'noProfilePic', label: 'Ignorar Foto Perfil' },
+                  { key: 'stories', label: 'Baixar Stories' },
+                  { key: 'highlights', label: 'Baixar Destaques' },
+                  { key: 'comments', label: 'Baixar Comentários' },
+                  { key: 'fastUpdate', label: 'Atualização Rápida' },
+                ].map(opt => (
+                  <label key={opt.key} className="flex items-center gap-2 cursor-pointer group">
+                    <div className="relative">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only" 
+                        checked={options[opt.key as keyof typeof options] as boolean}
+                        onChange={(e) => handleOptionChange(opt.key as keyof typeof options, e.target.checked)}
+                      />
+                      <div className={`w-8 h-4 rounded-full transition-colors ${options[opt.key as keyof typeof options] ? 'bg-primary' : 'bg-surface-container-high'}`}></div>
+                      <div className={`absolute w-3 h-3 bg-white rounded-full top-0.5 left-0.5 transition-transform ${options[opt.key as keyof typeof options] ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                    </div>
+                    <span className="text-[11px] font-mono text-on-surface-variant group-hover:text-primary transition-colors">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Filtros e Escopo Numérico */}
+            <div className="pt-4 border-t border-outline-variant mt-4">
+              <label className="text-[11px] font-mono text-on-surface-variant block mb-4">Filtros de Engajamento e Escopo</label>
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-4">
-                  <span className="font-mono text-[13px] text-on-surface-variant">Count:</span>
+                  <span className="font-mono text-[13px] text-on-surface-variant">Limite de Posts:</span>
                   <input 
                     className="w-24 px-2 py-1 bg-background border border-outline-variant font-mono text-[13px] text-primary text-right rounded-[4px]" 
                     type="number" 
                     value={options.count}
+                    placeholder="Ex: 50"
                     onChange={(e) => handleOptionChange('count', e.target.value)}
                   />
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="font-mono text-[13px] text-on-surface-variant">Min Likes:</span>
+                  <span className="font-mono text-[13px] text-on-surface-variant">Min Curtidas:</span>
                   <input 
                     className="w-24 px-2 py-1 bg-background border border-outline-variant font-mono text-[13px] text-primary text-right rounded-[4px]" 
                     type="number" 
                     value={options.minLikes}
+                    placeholder="Ex: 100"
                     onChange={(e) => handleOptionChange('minLikes', e.target.value)}
                   />
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="font-mono text-[13px] text-on-surface-variant">Min Comments:</span>
+                  <span className="font-mono text-[13px] text-on-surface-variant">Min Comentários:</span>
                   <input 
                     className="w-24 px-2 py-1 bg-background border border-outline-variant font-mono text-[13px] text-primary text-right rounded-[4px]" 
                     type="number" 
                     value={options.minComments}
+                    placeholder="Ex: 10"
                     onChange={(e) => handleOptionChange('minComments', e.target.value)}
                   />
+                </div>
+                
+                <div className="flex gap-4 mt-2">
+                   <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="rounded bg-background border-outline-variant text-primary focus:ring-primary h-4 w-4" 
+                        checked={options.tagged}
+                        onChange={(e) => handleOptionChange('tagged', e.target.checked)}
+                      />
+                      <span className="text-[11px] font-mono text-on-surface-variant">Posts Marcados</span>
+                   </label>
+                   <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="rounded bg-background border-outline-variant text-primary focus:ring-primary h-4 w-4" 
+                        checked={options.saved}
+                        onChange={(e) => handleOptionChange('saved', e.target.checked)}
+                      />
+                      <span className="text-[11px] font-mono text-on-surface-variant">Posts Salvos</span>
+                   </label>
                 </div>
               </div>
             </div>
@@ -204,7 +261,7 @@ export default function Dashboard() {
             <div className="pt-6">
               <button 
                 onClick={handleSearch}
-                disabled={loading || (!url.trim() && mode !== 'saved')}
+                disabled={loading || (!url.trim() && mode !== 'saved' && !options.saved)}
                 className="w-full bg-primary-container disabled:opacity-50 hover:bg-opacity-90 active:scale-[0.98] transition-all text-white py-4 text-lg font-bold flex items-center justify-center gap-4 rounded-[4px]"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>INICIAR EXTRAÇÃO</span>}

@@ -72,8 +72,6 @@ export async function POST(request: NextRequest) {
 
           if (options.noMetadata) {
             args.push('--no-metadata-json');
-          } else {
-            args.push('--save-metadata');
           }
 
           if (options.noProfilePic) args.push('--no-profile-pic');
@@ -82,7 +80,6 @@ export async function POST(request: NextRequest) {
           if (options.comments) args.push('--comments');
           if (options.fastUpdate) args.push('--fast-update');
         } else {
-          args.push('--save-metadata');
           args.push('--post-metadata-txt={caption}');
         }
 

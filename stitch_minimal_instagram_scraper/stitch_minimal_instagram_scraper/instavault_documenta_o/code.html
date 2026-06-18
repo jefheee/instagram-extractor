@@ -3,382 +3,130 @@
 <html class="dark" lang="pt-BR"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>InstaVault Documentation | Local Auth &amp; Architecture</title>
+<title>InstaVault Documentation | Local Auth & Architecture</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     "colors": {
-                        "primary-fixed": "#d1e4ff",
-                        "surface-tint": "#9ecaff",
-                        "surface": "#131313",
-                        "inverse-surface": "#e5e2e1",
-                        "surface-container-high": "#2a2a2a",
-                        "on-primary-container": "#002b4d",
-                        "on-secondary": "#313030",
-                        "on-tertiary-container": "#2a2a2a",
                         "primary-container": "#0095f6",
-                        "outline-variant": "#3f4752",
-                        "tertiary-fixed": "#e4e2e1",
                         "primary": "#9ecaff",
-                        "inverse-primary": "#0061a3",
-                        "on-secondary-fixed": "#1c1b1b",
-                        "on-tertiary-fixed": "#1b1c1c",
-                        "on-error-container": "#ffdad6",
-                        "surface-variant": "#353534",
-                        "on-tertiary": "#303030",
+                        "surface": "#131313",
+                        "surface-container-high": "#2a2a2a",
+                        "outline-variant": "#3f4752",
                         "on-surface-variant": "#bfc7d4",
-                        "tertiary": "#c8c6c5",
-                        "secondary-fixed-dim": "#c8c6c5",
-                        "surface-container-highest": "#353534",
-                        "on-background": "#e5e2e1",
-                        "on-secondary-fixed-variant": "#474746",
-                        "outline": "#89919e",
-                        "surface-container": "#201f1f",
-                        "surface-container-low": "#1c1b1b",
                         "on-surface": "#e5e2e1",
-                        "surface-dim": "#131313",
-                        "on-primary-fixed": "#001d36",
-                        "error": "#ffb4ab",
-                        "on-primary-fixed-variant": "#00497d",
-                        "error-container": "#93000a",
-                        "on-tertiary-fixed-variant": "#474746",
-                        "tertiary-fixed-dim": "#c8c6c5",
-                        "background": "#131313",
-                        "on-primary": "#003258",
-                        "on-error": "#690005",
-                        "secondary": "#c8c6c5",
-                        "inverse-on-surface": "#313030",
-                        "secondary-fixed": "#e5e2e1",
-                        "surface-bright": "#3a3939",
-                        "on-secondary-container": "#b7b5b4",
-                        "secondary-container": "#474746",
-                        "surface-container-lowest": "#0e0e0e",
-                        "primary-fixed-dim": "#9ecaff",
-                        "tertiary-container": "#929090"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
-                    },
-                    "spacing": {
-                        "lg": "24px",
-                        "base": "4px",
-                        "gutter": "16px",
-                        "md": "16px",
-                        "margin-safe": "24px",
-                        "xl": "40px",
-                        "sm": "8px",
-                        "xs": "4px"
                     },
                     "fontFamily": {
                         "headline-xl": ["Hanken Grotesk"],
                         "body-md": ["Hanken Grotesk"],
-                        "headline-lg": ["Hanken Grotesk"],
                         "headline-md": ["Hanken Grotesk"],
                         "label-caps": ["JetBrains Mono"],
                         "code-sm": ["JetBrains Mono"],
-                        "body-lg": ["Hanken Grotesk"]
-                    },
-                    "fontSize": {
-                        "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                        "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
-                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
-                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
-                        "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600"}],
-                        "code-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
-                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
                     }
                 },
             },
         }
     </script>
 <style>
-        body {
-            background-color: #050505;
-            color: #e5e2e1;
-            font-family: 'Hanken Grotesk', sans-serif;
-            scroll-behavior: smooth;
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
-        }
-        .code-block {
-            background-color: #050505;
-            border-top: 1px solid #333333;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .sidebar-item-active {
-            background-color: #474746;
-            color: #9ecaff;
-            border-left: 4px solid #9ecaff;
-        }
-        .glass-header {
-            background: rgba(19, 19, 19, 0.8);
-            backdrop-filter: blur(8px);
-        }
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #050505;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333333;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #444444;
-        }
+        body { background-color: #050505; color: #e5e2e1; font-family: 'Hanken Grotesk', sans-serif; scroll-behavior: smooth; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        .code-block { background-color: #050505; border-top: 1px solid #333333; font-family: 'JetBrains Mono', monospace; }
+        .glass-header { background: rgba(19, 19, 19, 0.8); backdrop-filter: blur(8px); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333333; }
+        ::-webkit-scrollbar-thumb:hover { background: #444444; }
     </style>
 </head>
-<body class="antialiased">
-<!-- TopNavBar (Shared Component Logic) -->
-<nav class="w-full top-0 sticky z-50 glass-header border-b border-outline-variant dark:border-outline-variant flex justify-between items-center px-lg py-md max-w-full mx-auto">
-<div class="flex items-center gap-md">
-<span class="font-headline-lg text-headline-lg font-black text-primary dark:text-primary tracking-tighter">InstaVault</span>
-</div>
-<div class="hidden md:flex gap-lg items-center">
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary transition-colors duration-200 font-body-md text-body-md cursor-pointer active:opacity-80" href="#">Dashboard</a>
-<a class="text-primary dark:text-primary font-bold border-b-2 border-primary font-body-md text-body-md cursor-pointer active:opacity-80" href="#">Documentation</a>
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary transition-colors duration-200 font-body-md text-body-md cursor-pointer active:opacity-80" href="#">GitHub</a>
-</div>
-<div class="flex items-center gap-md">
-<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors" data-icon="terminal">terminal</span>
-<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors" data-icon="settings">settings</span>
-</div>
+<body class="antialiased flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<nav class="w-full top-0 sticky z-50 glass-header border-b border-outline-variant flex justify-between items-center px-4 py-4">
+    <div class="flex items-center gap-4">
+        <span class="text-2xl font-black text-primary tracking-tighter">InstaVault Docs</span>
+    </div>
 </nav>
-<div class="flex min-h-screen">
-<!-- SideNavBar (Shared Component Logic) -->
-<aside class="hidden lg:flex flex-col h-[calc(100vh-64px)] w-64 fixed left-0 top-[64px] bg-surface dark:bg-surface border-r border-outline-variant dark:border-outline-variant py-lg overflow-y-auto">
-<div class="px-md mb-lg">
-<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">DOCS NAVIGATION</h3>
-<div class="space-y-base">
-<a class="flex items-center gap-sm px-sm py-xs rounded-sm text-primary bg-secondary-container border-l-4 border-primary transition-all active:scale-95 duration-100" href="#auth">
-<span class="material-symbols-outlined text-[18px]" data-icon="lock">lock</span>
-<span class="font-body-md text-body-md">Authentication</span>
-</a>
-<a class="flex items-center gap-sm px-sm py-xs rounded-sm text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-95 duration-100" href="#architecture">
-<span class="material-symbols-outlined text-[18px]" data-icon="account_tree">account_tree</span>
-<span class="font-body-md text-body-md">Architecture</span>
-</a>
-<a class="flex items-center gap-sm px-sm py-xs rounded-sm text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-95 duration-100" href="#cli">
-<span class="material-symbols-outlined text-[18px]" data-icon="terminal">terminal</span>
-<span class="font-body-md text-body-md">CLI Commands</span>
-</a>
-<a class="flex items-center gap-sm px-sm py-xs rounded-sm text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-95 duration-100" href="#api">
-<span class="material-symbols-outlined text-[18px]" data-icon="code">code</span>
-<span class="font-body-md text-body-md">API Reference</span>
-</a>
-</div>
-</div>
-<div class="mt-auto px-md pt-lg border-t border-outline-variant">
-<div class="flex items-center gap-md mb-md">
-<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
-<span class="material-symbols-outlined text-on-primary-container text-[16px]" data-icon="person">person</span>
-</div>
-<div>
-<p class="font-label-caps text-label-caps text-on-surface leading-none">ROOT_USER</p>
-<p class="text-[10px] text-on-surface-variant font-code-sm">v2.4.0-stable</p>
-</div>
-</div>
-<button class="w-full py-xs px-sm bg-primary-container text-on-primary-container font-label-caps text-label-caps rounded-sm hover:brightness-110 active:scale-95 transition-all">
-                    NEW SCRAPE
-                </button>
-</div>
-</aside>
-<!-- Main Content Canvas -->
-<main class="flex-1 lg:ml-64 p-gutter md:p-xl flex flex-col items-center">
-<div class="w-full max-w-[800px]">
-<!-- Hero Section -->
-<header class="mb-xl">
-<div class="inline-flex items-center px-sm py-xs bg-surface-container-high rounded-sm mb-md">
-<span class="font-label-caps text-label-caps text-primary">RELEASE NOTES</span>
-<span class="mx-xs text-outline">•</span>
-<span class="font-label-caps text-label-caps text-on-surface-variant">LATEST: V2.4.0</span>
-</div>
-<h1 class="font-headline-xl text-headline-xl text-on-surface mb-md">Technical Documentation</h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-                        A robust, developer-first framework for high-scale data extraction. This guide covers the low-level handshake protocols and the orchestration layer of the InstaVault CLI.
-                    </p>
-</header>
-<!-- Section 1: Autenticação Local -->
-<section class="mb-xl scroll-mt-24" id="auth">
-<div class="flex items-center gap-sm mb-md">
-<div class="h-6 w-1 bg-primary"></div>
-<h2 class="font-headline-md text-headline-md text-on-surface">Autenticação Local (Sessão)</h2>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-gutter">
-                        A autenticação no InstaVault utiliza um sistema de persistência de sessão local via arquivos <span class="font-code-sm text-primary bg-surface-container px-xs rounded-sm">.iv_session</span>. Uma vez autenticado, o token de portador (Bearer Token) é armazenado de forma criptografada no diretório home do usuário, permitindo operações CLI subsequentes sem re-entrada de credenciais.
-                    </p>
-<!-- Terminal Code Block -->
-<div class="code-block rounded-lg overflow-hidden border border-outline-variant">
-<div class="flex items-center justify-between px-md py-sm bg-surface-container-high border-b border-outline-variant">
-<div class="flex items-center gap-xs">
-<div class="w-2.5 h-2.5 rounded-full bg-error"></div>
-<div class="w-2.5 h-2.5 rounded-full bg-secondary"></div>
-<div class="w-2.5 h-2.5 rounded-full bg-primary-container"></div>
-<span class="font-label-caps text-label-caps text-on-surface-variant ml-sm">BASH</span>
-</div>
-<span class="material-symbols-outlined text-[18px] text-on-surface-variant cursor-pointer hover:text-on-surface" data-icon="content_copy">content_copy</span>
-</div>
-<div class="p-md overflow-x-auto">
-<pre class="text-code-sm font-code-sm leading-relaxed"><span class="text-primary">$</span> <span class="text-on-surface">instavault auth login --username "admin" --headless</span>
-<span class="text-outline">[*] Initializing secure handshake...</span>
-<span class="text-outline">[*] Cipher: AES-256-GCM</span>
-<span class="text-on-secondary-container">Enter Password:</span> <span class="text-on-surface">••••••••••••</span>
-<span class="text-primary">✔</span> <span class="text-on-surface">Session verified. Local state saved to ~/.instavault/session_cache.json</span>
 
-<span class="text-primary">$</span> <span class="text-on-surface">instavault status</span>
-<span class="text-outline">Status:</span> <span class="text-on-primary">ONLINE</span>
-<span class="text-outline">Active User:</span> <span class="text-on-surface">admin</span>
-<span class="text-outline">Session TTL:</span> <span class="text-on-surface">14d 23h 59m</span></pre>
-</div>
-</div>
-</section>
-<!-- Visual Separator -->
-<div class="h-px w-full bg-outline-variant my-xl opacity-30"></div>
-<!-- Section 2: Arquitetura de Extração -->
-<section class="mb-xl scroll-mt-24" id="architecture">
-<div class="flex items-center gap-sm mb-md">
-<div class="h-6 w-1 bg-primary"></div>
-<h2 class="font-headline-md text-headline-md text-on-surface">Arquitetura de Extração</h2>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-gutter">
-                        O InstaVault opera em um modelo híbrido. A interface de orquestração e gerenciamento de filas é construída em **Node.js**, enquanto o núcleo de processamento intensivo e parsing de DOM é delegado para subprocessos **Python**. Esta abordagem garante a escalabilidade do I/O assíncrono e a precisão das bibliotecas de extração de dados.
-                    </p>
-<!-- Bento Layout for Architecture Details -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-md mb-gutter">
-<div class="p-md bg-surface-container border border-outline-variant rounded-lg">
-<span class="material-symbols-outlined text-primary mb-sm" data-icon="hub">hub</span>
-<h4 class="font-label-caps text-label-caps text-on-surface mb-xs">NODE.JS MASTER</h4>
-<p class="text-[12px] text-on-surface-variant">Gerencia o pooling de conexões e a persistência em banco SQLite.</p>
-</div>
-<div class="p-md bg-surface-container border border-outline-variant rounded-lg">
-<span class="material-symbols-outlined text-primary mb-sm" data-icon="memory">memory</span>
-<h4 class="font-label-caps text-label-caps text-on-surface mb-xs">PYTHON WORKER</h4>
-<p class="text-[12px] text-on-surface-variant">Executa o scraping real usando threads isoladas e proxies rotativos.</p>
-</div>
-<div class="p-md bg-surface-container border border-outline-variant rounded-lg">
-<span class="material-symbols-outlined text-primary mb-sm" data-icon="data_object">data_object</span>
-<h4 class="font-label-caps text-label-caps text-on-surface mb-xs">IPC BRIDGE</h4>
-<p class="text-[12px] text-on-surface-variant">Comunicação via Standard Streams (STDIN/STDOUT) em formato JSON.</p>
-</div>
-</div>
-<!-- Node.js Code Block -->
-<div class="code-block rounded-lg overflow-hidden border border-outline-variant">
-<div class="flex items-center justify-between px-md py-sm bg-surface-container-high border-b border-outline-variant">
-<div class="flex items-center gap-xs">
-<span class="material-symbols-outlined text-[14px] text-primary" data-icon="javascript">javascript</span>
-<span class="font-label-caps text-label-caps text-on-surface-variant">worker_spawner.js</span>
-</div>
-<span class="font-label-caps text-[10px] text-outline">NODE.JS v18+</span>
-</div>
-<div class="p-md overflow-x-auto">
-<pre class="text-code-sm font-code-sm leading-relaxed"><span class="text-primary">const</span> { spawn } = <span class="text-on-secondary-container">require</span>(<span class="text-on-primary-container">'child_process'</span>);
+<main class="flex-1 max-w-[900px] mx-auto w-full p-6 md:p-10">
+    <header class="mb-12">
+        <h1 class="text-4xl text-on-surface mb-4 font-bold">Deep Dive Documentation</h1>
+        <p class="text-lg text-on-surface-variant max-w-2xl">
+            Aprenda a utilizar o wrapper do InstaVault, entenda a segurança por trás da ferramenta e todas as customizações disponíveis na UI.
+        </p>
+    </header>
 
-<span class="text-outline">// Initialize the Python scraping core</span>
-<span class="text-primary">const</span> pythonProcess = <span class="text-on-secondary-container">spawn</span>(<span class="text-on-primary-container">'python3'</span>, [<span class="text-on-primary-container">'./core/extractor.py'</span>]);
+    <!-- Sec 1: Security -->
+    <section class="mb-16">
+        <div class="flex items-center gap-2 mb-4">
+            <div class="h-6 w-1 bg-primary"></div>
+            <h2 class="text-2xl font-semibold text-on-surface">Privacidade e Segurança (É Seguro?)</h2>
+        </div>
+        <p class="text-base text-on-surface-variant mb-4">
+            O InstaVault é uma ferramenta estritamente local (Local Wrapper). Isso garante total controle e segurança:
+        </p>
+        <ul class="list-disc pl-6 text-on-surface-variant space-y-2 mb-6">
+            <li><strong>Zero Nuvem:</strong> Nenhum dado baixado ou métrica de perfil trafega fora do seu PC. Tudo é processado pelo motor Node.js/Python instalado nativamente.</li>
+            <li><strong>Sessões Nativas Criptografadas:</strong> Nenhuma senha ou dado de login é digitado ou armazenado na interface gráfica. O seu cookie de sessão é gerado pelo seu próprio terminal e guardado localmente pelo Python (`%LOCALAPPDATA%\Instaloader`).</li>
+            <li><strong>Bypass de Restrições:</strong> O fato da extração partir da sua própria máquina (no seu IP) reduz as chances de bloqueios do Instagram em comparação a servidores externos de scraping.</li>
+        </ul>
+    </section>
 
-pythonProcess.stdout.<span class="text-on-secondary-container">on</span>(<span class="text-on-primary-container">'data'</span>, (data) =&gt; {
-    <span class="text-primary">const</span> result = JSON.<span class="text-on-secondary-container">parse</span>(data.toString());
-    <span class="text-on-surface">processMetricQueue</span>(result.payload);
-});
+    <!-- Sec 2: Local Auth -->
+    <section class="mb-16" id="auth">
+        <div class="flex items-center gap-2 mb-4">
+            <div class="h-6 w-1 bg-primary"></div>
+            <h2 class="text-2xl font-semibold text-on-surface">Guia de Inicialização do Motor Local (Auth)</h2>
+        </div>
+        <p class="text-base text-on-surface-variant mb-6">
+            Para desbloquear o máximo potencial da ferramenta (como extrair posts salvos, conteúdos de perfis privados ou baixar stories voláteis), você deve registrar sua sessão do Instagram localmente:
+        </p>
+        <div class="code-block rounded-lg overflow-hidden border border-outline-variant mb-4">
+            <div class="flex items-center justify-between px-4 py-2 bg-surface-container-high border-b border-outline-variant">
+                <span class="text-[11px] text-on-surface-variant font-mono">BASH / CMD / POWERSHELL</span>
+            </div>
+            <div class="p-4 overflow-x-auto">
+<pre class="text-[13px] font-mono leading-relaxed"><span class="text-primary">$</span> <span class="text-on-surface">python -m instaloader --login=SEU_USUARIO_AQUI</span>
+<span class="text-outline">[*] O CLI solicitará sua senha com segurança de terminal (os caracteres não aparecerão).</span>
+<span class="text-outline">[*] Conclua verificações 2FA caso solicitadas pelo Instagram.</span>
+<span class="text-primary">✔</span> <span class="text-on-surface">Sessão validada e salva permanentemente na máquina.</span></pre>
+            </div>
+        </div>
+        <p class="text-sm text-on-surface-variant">Ao concluir, cadastre o <code>IG_USERNAME=SEU_USUARIO_AQUI</code> no arquivo <code>.env.local</code> da pasta do projeto para informar o Next.js sobre a existência da sessão ativa.</p>
+    </section>
 
-pythonProcess.stderr.<span class="text-on-secondary-container">on</span>(<span class="text-on-primary-container">'data'</span>, (err) =&gt; {
-    <span class="text-error">console.error</span>(<span class="text-on-surface-variant">`[WORKER_ERROR]: ${err}`</span>);
-});
+    <!-- Sec 3: Customizations -->
+    <section class="mb-16">
+        <div class="flex items-center gap-2 mb-4">
+            <div class="h-6 w-1 bg-primary"></div>
+            <h2 class="text-2xl font-semibold text-on-surface">O que eu posso personalizar? (Como Usar)</h2>
+        </div>
+        <p class="text-base text-on-surface-variant mb-6">
+            O Painel de Controle foi projetado para expor as flags essenciais do Instaloader de maneira visual, transferindo-as no runtime via Server-Sent Events (SSE).
+        </p>
 
-<span class="text-outline">// Sending instructions to Python via STDIN</span>
-pythonProcess.stdin.<span class="text-on-secondary-container">write</span>(JSON.<span class="text-on-secondary-container">stringify</span>({ 
-    task: <span class="text-on-primary-container">'EXTRACT_POSTS'</span>, 
-    target: <span class="text-on-primary-container">'@tech_insider'</span> 
-}));</pre>
-</div>
-</div>
-</section>
-<!-- Visual Documentation Image Section -->
-<section class="mb-xl">
-<div class="relative w-full h-80 rounded-xl overflow-hidden border border-outline-variant group">
-<img class="w-full h-full object-cover" data-alt="A highly detailed architectural diagram of a modern software cloud infrastructure. The design is minimalist with glowing electric blue lines connecting server icons, database nodes, and worker processes against a pitch-black background. Sharp typography and hair-line borders emphasize a tactical developer tool aesthetic, matching an obsidian color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_sFqOIPSCnNXE1mez7Rt3rbjqe0Lg8H6t3aA8uG9T4ExIIBF58NaAKTE1jjhq0N4ABKIHLWHlz5Eg2cOmuD6qKKbccQ1c47I1-CMFq7uaI5_7ywri7qE8rfqRl2ChMZTRAnAuXgnPACo0BSbAIGvNAJhXtx9H9YXRHKaT3ukg3gq_sqUsQzL_qb_fj2JQX3TZJY23tvm0tfRYGtn0nx5S4k_HM3QVY0uerrGhTP88Ub0LB5b0eHCGUzk_wSIXTmRzWk_ExYUsle0"/>
-<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-lg">
-<div>
-<h3 class="font-headline-md text-headline-md text-white">Full Stack Visualization</h3>
-<p class="text-on-surface-variant font-body-md">Mapping the flow from CLI triggers to remote data capture.</p>
-</div>
-</div>
-</div>
-</section>
-<!-- Footer Navigation -->
-<footer class="flex items-center justify-between py-xl border-t border-outline-variant">
-<div class="flex flex-col">
-<span class="font-label-caps text-label-caps text-on-surface-variant">PREVIOUS</span>
-<a class="font-body-lg text-body-lg text-primary hover:underline flex items-center gap-xs" href="#">
-<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
-                            Installation Guide
-                        </a>
-</div>
-<div class="flex flex-col items-end">
-<span class="font-label-caps text-label-caps text-on-surface-variant">NEXT</span>
-<a class="font-body-lg text-body-lg text-primary hover:underline flex items-center gap-xs" href="#">
-                            Storage Backend
-                            <span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
-</a>
-</div>
-</footer>
-</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 bg-surface-container border border-outline-variant rounded-lg">
+                <h4 class="font-bold text-on-surface mb-2">Caminhos e Alvos</h4>
+                <p class="text-sm text-on-surface-variant">Você pode apontar a extração para qualquer pasta do seu disco (Ex: <code>D:\Meus Backups\Instagram</code>). O InstaVault cria pastas subjacentes (`{profile}`) dinamicamente e despeja a mídia brute (`.mp4`, `.jpg`).</p>
+            </div>
+            <div class="p-4 bg-surface-container border border-outline-variant rounded-lg">
+                <h4 class="font-bold text-on-surface mb-2">Toggles de Economia</h4>
+                <p class="text-sm text-on-surface-variant">As chaves booleanas permitem poupar processamento. Pode desligar Metadados (`.json.xz`), ignorar vídeos pesados e omitir a raspagem da legenda (`.txt`).</p>
+            </div>
+            <div class="p-4 bg-surface-container border border-outline-variant rounded-lg">
+                <h4 class="font-bold text-on-surface mb-2">Filtros de Engajamento</h4>
+                <p class="text-sm text-on-surface-variant">Poupe tempo usando campos de "Mínimo de Curtidas e Comentários". O sistema monta a expressão lógica no Python (<code>likes >= X</code>) para rejeitar os posts que não cumprirem a regra.</p>
+            </div>
+            <div class="p-4 bg-surface-container border border-outline-variant rounded-lg">
+                <h4 class="font-bold text-on-surface mb-2">Modo Atualização Rápida</h4>
+                <p class="text-sm text-on-surface-variant">Ativando a "Atualização Rápida" (<code>--fast-update</code>), o robô varre os posts até bater na primeira mídia que você já baixou anteriormente, finalizando imediatamente a execução (ótimo para CRON e rotinas diárias).</p>
+            </div>
+        </div>
+    </section>
+
 </main>
-<!-- Right Side - Terminal Mini-view (Optional Sidebar Aspect) -->
-<aside class="hidden xl:block w-[320px] sticky top-[64px] h-[calc(100vh-64px)] bg-surface-container-lowest border-l border-outline-variant p-md">
-<h3 class="font-label-caps text-label-caps text-on-surface mb-md">LIVE LOGS SIMULATOR</h3>
-<div class="bg-black p-sm rounded-sm font-code-sm text-[12px] border border-outline-variant h-[400px] overflow-hidden flex flex-col gap-xs">
-<p class="text-primary">[14:02:11] Init instance...</p>
-<p class="text-on-surface-variant">[14:02:12] Handshake success</p>
-<p class="text-on-surface-variant">[14:02:14] Spawning python_worker_01</p>
-<p class="text-on-surface-variant">[14:02:15] Spawning python_worker_02</p>
-<p class="text-error">[14:02:16] ERR: Rate limit detected on thread 01</p>
-<p class="text-on-surface-variant">[14:02:16] Rotating proxy via NordVPN...</p>
-<p class="text-on-primary">[14:02:18] Proxy active: 185.12.3.XX</p>
-<p class="text-on-surface-variant">[14:02:19] Resuming extraction...</p>
-<div class="mt-auto flex items-center gap-xs text-primary animate-pulse">
-<span>_</span>
-</div>
-</div>
-<div class="mt-lg">
-<div class="flex items-center justify-between mb-sm">
-<span class="font-label-caps text-label-caps text-on-surface-variant">NETWORK LOAD</span>
-<span class="text-primary font-code-sm">24%</span>
-</div>
-<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
-<div class="h-full bg-primary w-[24%]"></div>
-</div>
-</div>
-</aside>
-</div>
-<!-- Micro-interaction Script -->
-<script>
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-                
-                // Update sidebar active state
-                document.querySelectorAll('aside a').forEach(a => {
-                    a.classList.remove('text-primary', 'bg-secondary-container', 'border-l-4', 'border-primary');
-                    a.classList.add('text-on-surface-variant');
-                });
-                this.classList.remove('text-on-surface-variant');
-                this.classList.add('text-primary', 'bg-secondary-container', 'border-l-4', 'border-primary');
-            });
-        });
-    </script>
 </body></html>

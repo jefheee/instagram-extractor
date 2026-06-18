@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from './context/LanguageContext';
 
 export default function LandingPage() {
   const { t } = useLanguage();
@@ -89,7 +89,7 @@ export default function LandingPage() {
             </div>
             <div className="relative overflow-hidden h-[300px] md:h-[400px] bg-[#050505] p-4 font-mono text-[13px] text-left">
                <div className="scanline"></div>
-               {mockLogs.map((log, i) => (
+               {mockLogs.filter(Boolean).map((log, i) => (
                  <div key={i} className={`mb-1 ${log.includes('✓') || log.includes('[success]') ? 'text-green-400' : log.includes('✖') || log.includes('[error]') ? 'text-error' : log.includes('[Sistema]') ? 'text-primary' : 'text-on-surface-variant'}`}>
                    <span className="opacity-40">[{new Date().toLocaleTimeString()}]</span> {log.replace(/\[.*?\]/, '')}
                  </div>

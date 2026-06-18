@@ -11,7 +11,6 @@
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.0",
     "axios": "^1.16.1",
-    "instagram-private-api": "^1.46.1",
     "lucide-react": "^1.17.0",
     "next": "15.1.0",
     "react": "^19.0.0",

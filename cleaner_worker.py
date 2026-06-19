@@ -121,37 +121,119 @@ def process_directory(source_dir: str, dest_dir: str, keywords: List[str], sensi
             
         txt_files = [f for f in files if f.lower().endswith('.txt')]
         img_files = [f for f in files if f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))]
+        metadata_files = [f for f in files if f.lower().endswith(('.txt', '.json', '.xz', '.json.xz'))]
         
-        # We can also parse JSON with lzma if needed, but not strictly requested for the condition,
-        # prompt said: "importe a lib lzma se for ler metadados"
-        
-        should_discard = False
+        should_discard_entire = False
         reason = ""
         
-        # Rule 1: Fast Heuristic (Text regex)
+        # Rule 1: Fast Heuristic (Text regex in .txt files)
         for txt in txt_files:
             if check_text_keywords(os.path.join(folder, txt), keywords):
-                should_discard = True
+                should_discard_entire = True
                 reason = "keyword_match"
                 break
                 
-        # Rule 2: CV Ollama Fallback
-        # If sensitivity < 100, we use it. If it's 100 (soft), maybe we skip ollama?
-        # Let's say sensitivity < 100 means we engage Ollama to be aggressive.
-        if not should_discard and sensitivity < 100:
-            for img in img_files:
-                if check_image_vision_ollama(os.path.join(folder, img)):
-                    should_discard = True
-                    reason = "ollama_vision_llava"
-                    break
-        
-        if should_discard:
+        if should_discard_entire:
+            # Move the ENTIRE folder to Descartados
             if safe_copy_tree(folder, discard_dir):
                 discarded += 1
                 print_log({"status": "moved", "reason": reason, "folder": folder_name})
         else:
-            if safe_copy_tree(folder, filtered_dir):
-                print_log({"status": "kept", "folder": folder_name})
+            if sensitivity >= 100:
+                # Soft mode: skip Ollama vision check entirely and keep whole folder
+                if safe_copy_tree(folder, filtered_dir):
+                    print_log({"status": "kept", "folder": folder_name})
+            else:
+                # Carousel logic with Ollama vision check on individual images
+                dest_filtered_folder = os.path.join(filtered_dir, folder_name)
+                dest_discarded_folder = os.path.join(discard_dir, folder_name)
+                
+                # Check for folder collisions and apply suffix if needed
+                if os.path.exists(dest_filtered_folder) or os.path.exists(dest_discarded_folder):
+                    suffix = f"_{int(time.time())}"
+                    dest_filtered_folder += suffix
+                    dest_discarded_folder += suffix
+                
+                # Pre-create the subfolders in both locations
+                try:
+                    os.makedirs(dest_filtered_folder, exist_ok=True)
+                    os.makedirs(dest_discarded_folder, exist_ok=True)
+                except Exception as e:
+                    print_log({"status": "error", "message": f"Failed to create subfolders for {folder_name}: {str(e)}"})
+                    continue
+                
+                # Copy base metadata files to both locations
+                for meta in metadata_files:
+                    src_meta = os.path.join(folder, meta)
+                    try:
+                        shutil.copy2(src_meta, os.path.join(dest_filtered_folder, meta))
+                        shutil.copy2(src_meta, os.path.join(dest_discarded_folder, meta))
+                    except Exception as e:
+                        print_log({"status": "warning", "message": f"Failed to copy metadata {meta} for {folder_name}: {str(e)}"})
+                
+                kept_imgs = []
+                discarded_imgs = []
+                total_imgs = len(img_files)
+                
+                for idx, img in enumerate(img_files):
+                    img_path = os.path.join(folder, img)
+                    is_text = False
+                    
+                    try:
+                        # Call Ollama
+                        is_text = check_image_vision_ollama(img_path)
+                    except Exception as e:
+                        print_log({"status": "warning", "message": f"Ollama model error on {img}: {str(e)}"})
+                        # Default to False (photo) on vision failure
+                        is_text = False
+                    
+                    if is_text:
+                        discarded_imgs.append(img)
+                        try:
+                            shutil.copy2(img_path, os.path.join(dest_discarded_folder, img))
+                        except Exception as e:
+                            print_log({"status": "error", "message": f"Failed to copy discarded image {img}: {str(e)}"})
+                    else:
+                        kept_imgs.append(img)
+                        try:
+                            shutil.copy2(img_path, os.path.join(dest_filtered_folder, img))
+                        except Exception as e:
+                            print_log({"status": "error", "message": f"Failed to copy kept image {img}: {str(e)}"})
+                    
+                    # Print log at file level
+                    print_log({
+                        "status": "info",
+                        "message": f"[✓] Imagem {idx + 1} de {total_imgs} validada ({img})"
+                    })
+                
+                # Post-processing clean up and status reporting
+                if len(discarded_imgs) == 0:
+                    # Nothing discarded. Clean up empty folder in Descartados
+                    try:
+                        shutil.rmtree(dest_discarded_folder)
+                    except Exception:
+                        pass
+                    print_log({"status": "kept", "folder": folder_name})
+                elif len(kept_imgs) == 0:
+                    # Everything discarded. Clean up empty folder in Filtrados
+                    try:
+                        shutil.rmtree(dest_filtered_folder)
+                    except Exception:
+                        pass
+                    print_log({"status": "moved", "reason": "ollama_vision_llava", "folder": folder_name})
+                    discarded += 1
+                else:
+                    # Truly split
+                    print_log({
+                        "status": "kept",
+                        "folder": f"{folder_name} (Dividido: {len(kept_imgs)} fotos mantidas)"
+                    })
+                    print_log({
+                        "status": "moved",
+                        "reason": "ollama_vision_split",
+                        "folder": f"{folder_name} (Dividido: {len(discarded_imgs)} imagens de texto descartadas)"
+                    })
+                    discarded += 1
             
         processed += 1
         print_log({"status": "progress", "processed": processed, "total": total_folders})

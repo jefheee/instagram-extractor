@@ -41,6 +41,12 @@ export default function CleanerPage() {
   const handleGenerateRules = async () => {
     if (!prompt) return;
     setIsGenerating(true);
+    setIsRunning(true);
+    setLogs([
+      { status: 'info', message: '[SYSTEM] Iniciando geração de palavras-chave...' },
+      { status: 'info', message: '[SYSTEM] Conectando ao Ollama em localhost:11434...' },
+      { status: 'info', message: '[SYSTEM] Enviando prompt. Aguardando processamento da CPU...' }
+    ]);
     try {
       const res = await fetch('/api/cleaner/generate', {
         method: 'POST',
@@ -48,16 +54,27 @@ export default function CleanerPage() {
         body: JSON.stringify({ prompt })
       });
       const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || 'Erro na API.');
+      
       if (data.keywords && Array.isArray(data.keywords)) {
         const merged = Array.from(new Set([...keywords, ...data.keywords]));
         setKeywords(merged);
         setPrompt('');
+        setLogs(prev => [...prev, { status: 'info', message: `[SYSTEM] Sucesso! ${data.keywords.length} palavras-chave geradas e adicionadas.` }]);
+      } else {
+        throw new Error('Formato de resposta inesperado do backend.');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert('Erro ao comunicar com Ollama local.');
+      setLogs(prev => [...prev, { status: 'error', message: `[SYSTEM] Erro: ${e.message}` }]);
+      setLogs(prev => [...prev, { status: 'warning', message: '[SYSTEM] Ativando Fallback de Segurança...' }]);
+      const fallback = ['aviso', 'nota', 'comunicado', 'informação', 'atenção', 'feriado', 'recesso', 'reunião', 'pais', 'boletim'];
+      const merged = Array.from(new Set([...keywords, ...fallback]));
+      setKeywords(merged);
     } finally {
       setIsGenerating(false);
+      setIsRunning(false);
     }
   };
 

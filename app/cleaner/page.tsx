@@ -53,18 +53,92 @@ export default function CleanerPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
-      const data = await res.json();
       
-      if (!res.ok) throw new Error(data.error || 'Erro na API.');
-      
-      if (data.keywords && Array.isArray(data.keywords)) {
-        const merged = Array.from(new Set([...keywords, ...data.keywords]));
-        setKeywords(merged);
-        setPrompt('');
-        setLogs(prev => [...prev, { status: 'info', message: `[SYSTEM] Sucesso! ${data.keywords.length} palavras-chave geradas e adicionadas.` }]);
-      } else {
-        throw new Error('Formato de resposta inesperado do backend.');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Falha na resposta do servidor.');
       }
+
+      if (!res.body) {
+        throw new Error('A resposta do stream está vazia.');
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let accumulatedText = '';
+
+      setLogs(prev => [
+        ...prev,
+        { status: 'info', message: '[OLLAMA LIVE]: ' }
+      ]);
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          accumulatedText += chunk;
+          
+          setLogs(prev => {
+            const nextLogs = [...prev];
+            let lastLiveIdx = -1;
+            for (let i = nextLogs.length - 1; i >= 0; i--) {
+              const msg = nextLogs[i]?.message;
+              if (msg && msg.startsWith('[OLLAMA LIVE]:')) {
+                lastLiveIdx = i;
+                break;
+              }
+            }
+            if (lastLiveIdx !== -1) {
+              nextLogs[lastLiveIdx] = {
+                status: 'info',
+                message: `[OLLAMA LIVE]: ${accumulatedText}`
+              };
+            }
+            return nextLogs;
+          });
+        }
+      }
+
+      // Limpeza de blocos de código markdown se houver
+      const cleanedText = accumulatedText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+      let parsedKeywords = JSON.parse(cleanedText);
+      
+      if (!Array.isArray(parsedKeywords)) {
+        if (typeof parsedKeywords === 'object' && parsedKeywords !== null) {
+          const vals = Object.values(parsedKeywords);
+          const potentialArray = vals.find(v => Array.isArray(v));
+          parsedKeywords = potentialArray || Object.values(parsedKeywords);
+        } else {
+          throw new Error('O formato retornado não é um array.');
+        }
+      }
+
+      // Filtro de Sanidade e Pós-Processamento
+      const protectedTerms = ['aluno', 'alunos', 'professor', 'escola', 'pessoal', 'evento'];
+      const sanitizedKeywords = parsedKeywords
+        .map((k: any) => String(k).trim())
+        .filter((k: string) => {
+          if (!k) return false;
+          if (k.length < 3) return false;
+          const lowerWord = k.toLowerCase();
+          const isProtected = protectedTerms.some(term => lowerWord.includes(term));
+          return !isProtected;
+        });
+
+      if (sanitizedKeywords.length === 0) {
+        throw new Error('Filtro de sanidade resultou em zero termos válidos.');
+      }
+
+      const merged = Array.from(new Set([...keywords, ...sanitizedKeywords]));
+      setKeywords(merged);
+      setPrompt('');
+      setLogs(prev => [
+        ...prev,
+        { status: 'info', message: `[SYSTEM] Sucesso! ${sanitizedKeywords.length} palavras-chave geradas e adicionadas após filtro.` }
+      ]);
+
     } catch (e: any) {
       console.error(e);
       setLogs(prev => [...prev, { status: 'error', message: `[SYSTEM] Erro: ${e.message}` }]);
@@ -84,10 +158,19 @@ export default function CleanerPage() {
 
   const addKeyword = (e: FormEvent) => {
     e.preventDefault();
-    if (newKeyword.trim() && !keywords.includes(newKeyword.trim())) {
-      setKeywords([...keywords, newKeyword.trim()]);
-      setNewKeyword('');
+    if (!newKeyword.trim()) return;
+    
+    // Divide por vírgula ou espaço
+    const splitWords = newKeyword
+      .split(/[\s,]+/)
+      .map(w => w.trim())
+      .filter(w => w.length > 0);
+      
+    const uniqueNewWords = splitWords.filter(w => !keywords.includes(w));
+    if (uniqueNewWords.length > 0) {
+      setKeywords([...keywords, ...uniqueNewWords]);
     }
+    setNewKeyword('');
   };
 
   const getSensitivityValue = () => {

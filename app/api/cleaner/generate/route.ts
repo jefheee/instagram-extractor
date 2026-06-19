@@ -15,52 +15,81 @@ Não inclua texto conversacional, markdown ou pontuações isoladas. NÃO ESCREV
 Exemplo de saída esperada:
 ["feriado", "comunicado", "reunião de pais", "recesso escolar", "atenção responsáveis", "nota de falecimento", "boletim"]`;
 
-    // Attempt to call local Ollama
-    const response = await fetch('http://127.0.0.1:11434/api/generate', {
+    // Call Ollama with stream: true
+    const ollamaResponse = await fetch('http://127.0.0.1:11434/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'qwen2:1.5b',
         prompt: prompt,
         system: systemPrompt,
-        stream: false,
+        stream: true,
         format: 'json'
       }),
     });
 
-    if (!response.ok) {
+    if (!ollamaResponse.ok) {
       throw new Error('Falha ao conectar com Ollama local em localhost:11434.');
     }
 
-    const data = await response.json();
-    let rawOutput = data.response || "";
+    if (!ollamaResponse.body) {
+      throw new Error('A resposta do Ollama está vazia (no body).');
+    }
 
-    // Limpeza de string backend (Regex) para remover eventuais blocos de markdown
-    rawOutput = rawOutput.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+    const reader = ollamaResponse.body.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
 
-    let keywords = [];
-    try {
-      keywords = JSON.parse(rawOutput);
-      if (!Array.isArray(keywords)) {
-        if (typeof keywords === 'object' && keywords !== null) {
-          // Attempt rescue if it returned an object like {"keywords": [...]}
-          const vals = Object.values(keywords);
-          const potentialArray = vals.find(v => Array.isArray(v));
-          keywords = potentialArray || Object.values(keywords); 
-        } else {
-          throw new Error('Parsed JSON is not an array.');
+    const stream = new ReadableStream({
+      async start(controller) {
+        let buffer = '';
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (!line.trim()) continue;
+              try {
+                const parsed = JSON.parse(line);
+                if (parsed.response) {
+                  controller.enqueue(encoder.encode(parsed.response));
+                }
+              } catch (e) {
+                // Ignore parsing errors for partial or malformed lines
+              }
+            }
+          }
+
+          if (buffer.trim()) {
+            try {
+              const parsed = JSON.parse(buffer);
+              if (parsed.response) {
+                controller.enqueue(encoder.encode(parsed.response));
+              }
+            } catch (e) {
+              // Ignore
+            }
+          }
+          controller.close();
+        } catch (err: any) {
+          controller.error(err);
         }
       }
-    } catch (e) {
-      console.error("Failed to parse JSON from Ollama:", rawOutput);
-      return new Response(JSON.stringify({ error: 'Ollama JSON Parse Error: O modelo retornou um formato inválido ou não converteu para JSON.' }), { status: 500 });
-    }
+    });
 
-    if (!keywords || keywords.length === 0) {
-      return new Response(JSON.stringify({ error: 'Ollama retornou um array vazio.' }), { status: 500 });
-    }
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
 
-    return new Response(JSON.stringify({ keywords }), { status: 200 });
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }

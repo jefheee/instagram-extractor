@@ -5,7 +5,7 @@ import path from 'path';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { source, destination, keywords, sensitivity } = body;
+    const { source, destination, keywords, sensitivity, disableOcr } = body;
 
     if (!source || !destination) {
       return new Response(JSON.stringify({ error: 'Source and Destination are required' }), { status: 400 });
@@ -23,6 +23,10 @@ export async function POST(req: NextRequest) {
           '--destination', destination,
           '--sensitivity', (sensitivity || 0).toString()
         ];
+
+        if (disableOcr) {
+          args.push('--disable-ocr');
+        }
         
         if (keywords && keywords.trim()) {
           args.push('--keywords', keywords.trim());

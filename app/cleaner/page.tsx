@@ -29,6 +29,7 @@ export default function CleanerPage() {
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [enableOcr, setEnableOcr] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [progress, setProgress] = useState({ processed: 0, total: 0 });
   
@@ -194,7 +195,8 @@ export default function CleanerPage() {
           source: sourceDir, 
           destination: destDir,
           keywords: keywords.join(','), 
-          sensitivity: getSensitivityValue() 
+          sensitivity: getSensitivityValue(),
+          disableOcr: !enableOcr
         }),
       });
 
@@ -357,6 +359,25 @@ export default function CleanerPage() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* OCR Toggle */}
+            <div className="pt-4 border-t border-outline-variant mt-2">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative">
+                  <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={enableOcr}
+                    onChange={(e) => setEnableOcr(e.target.checked)}
+                    disabled={isRunning}
+                  />
+                  <div className="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-on-surface-variant peer-checked:after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                </div>
+                <span className="text-[11px] font-mono text-on-surface-variant group-hover:text-on-surface transition-colors">
+                  Habilitar OCR Visual (Processamento Lento)
+                </span>
+              </label>
             </div>
 
             {/* Start Button */}
